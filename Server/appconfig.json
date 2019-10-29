@@ -1,0 +1,6 @@
+{
+  "STATIC_URL_PATH": "/static",
+  "MYSQL_DATABASE_USER": "",
+  "DEBUG": true
+}
+
