@@ -18,7 +18,4 @@ Utilizes the osmxs to interface with openstreetmap.
 
 
 #setup
-
- ##Server:
-    pip3 install flask
-    pip3 install osmnx
+``` pip install -r requirements.txt ```
