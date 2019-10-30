@@ -20,6 +20,29 @@ def index():
 
 """
 This is the main route to compute the route for the data the user passed in.
+EXPECTED FORMAT OF JSON PASSED IN:
+{
+"start_address": {
+"latitude": FLOAT,
+"longitude": FLOAT
+}, 
+"other_points_to_include" = [
+{
+"latitude": FLOAT,
+"longitude": FLOAT
+},...
+{
+"latitude": FLOAT,
+"longitude": FLOAT
+}],
+
+"max_or_minimize_change": Boolean,
+"cycle_or_not": Boolean,
+
+"end_address": {
+"latitude": FLOAT,
+"longitude": FLOAT
+}}
 """
 @app.route('/get_route', methods=['POST'])
 def get_route():
