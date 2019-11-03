@@ -1,15 +1,42 @@
+<!DOCTYPE html>
 <html>
+<head>
+<meta charset='utf-8' />
+<title>EleNa Elevation Mapping </title>
 
-  <head>
-    <title>EleNa Elevation Mapping </title>
-      <meta charset="UTF-8">
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/elena.css') }}">
-  </head>
+     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/elena.css') }}"> <!--our stylesheet rules-->
+<style>
+
+
+</style>
+</head>
+<body>
     <h1> Elena Fitness App</h1>
-  <div id="map">
-    <!--  TODO fill in this page with renderable content relating to our app-->
-  </div>
-  </body>
+    <div id='row1'>
+      <div id='map'></div>
+      <div id='control_box'>THIS IS THE CONTROL BOX (buttons and input boxes go here</div>
+
+    </div>
+
+    <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
+
+
+<!--    TODO move this script to external file for loading-->
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
+var map = new mapboxgl.Map({
+container: 'map', // container id
+style: 'mapbox://styles/mapbox/streets-v11', // stylesheet or maybe: 'mapbox://styles/mapbox/light-v9' ?
+center: [-72.526711, 42.391155], // starting position [lng, lat]
+zoom: 14 // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
+});
+</script>
+
+
+
+</body>
 </html>

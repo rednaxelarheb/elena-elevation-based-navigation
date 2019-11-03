@@ -2,3 +2,30 @@
 h1{
 text-align: center;
 }
+
+div#row1{
+width: 100%;
+display:block;
+}
+#map {
+    float: left;
+    width:70%;
+    height: 500px;
+}
+
+#control_box {
+    display: inline;
+    border: solid 1px red;
+    width: available;
+    height: 500px;
+
+
+}
+#text_instruction {
+    display: block;
+    clear: both;
+    vertical-align: bottom;
+    width: 100%;
+    border: solid 1px red;
+
+}

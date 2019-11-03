@@ -11,7 +11,7 @@ app = Flask(__name__, **params)
 app.config.update(settings)
 
 
-
+# TODO: this route strangely does NOT match /index.html (which is the same route by internet conventions. fix this)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # TODO implement default app route page to be returned
