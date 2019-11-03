@@ -13,7 +13,7 @@ def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
         radius (float): half the sidelength of the location covered
     Returns:
         An igraph containing the street network within the specified location.
-        Nodes have 'x' (longitude), 'y' (latitude), and 'osmid' (id) attributes.
+        Nodes have 'x' (latitude), 'y' (longitude), and 'osmid' (id) attributes.
         Edges have 'length' (distance), 'grade' (change in elevation), and 'name' attributes.
     '''
     # calculate extent of the graph
