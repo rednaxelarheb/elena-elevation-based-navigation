@@ -1,9 +1,10 @@
 import osmnx
 import networkx
 import igraph
+import os
+import json
 
-with open('google_maps_api_key.txt', 'r') as f:
-    google_maps_api_key = f.readline()
+this_files_dir = os.path.dirname(os.path.realpath(__file__))
 
 def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
     '''Constructs a graph from street networks within a specified location.
@@ -17,6 +18,23 @@ def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
         Nodes have 'x' (latitude), 'y' (longitude), and 'osmid' (id) attributes.
         Edges have 'length' (distance), 'grade' (change in elevation), and 'name' attributes.
     '''
+    filename = json.dumps([latitude, longitude, radius]) + '.zip'
+    filename = os.path.join(this_files_dir, 'saved_graphs', filename)
+    if os.path.exists(filename):
+        graph = igraph.Graph.Read_GraphMLz(filename)
+    else:
+        should_download = input('Are you sure you want to download data? (y/n): ')
+        assert should_download.lower() == 'y'
+        with open(os.path.join(this_files_dir, 'google_maps_api_key.txt'), 'r') as f:
+            google_maps_api_key = f.readline()
+        graph = _get_graph_not_memoized(latitude, longitude, radius, google_maps_api_key)
+        graph.write_graphmlz(filename)
+    return graph
+    
+
+
+def _get_graph_not_memoized(latitude: float, longitude: float, radius: float,
+    google_maps_api_key: str) -> igraph.Graph:
     # calculate extent of the graph
     radius_latlong = radius / 60
     north_lat = latitude + radius_latlong
@@ -39,8 +57,4 @@ def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
         graph_ig.es[attr] = list(networkx.get_edge_attributes(graph, attr).values())
     graph_ig.es[attr] = list(networkx.get_edge_attributes(graph, attr).values())
     # return igraph
-    return graph_ig
-
-def get_testing_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
-    #TODO: return julian's static map, for tetsing/demo purposes
     return graph_ig
