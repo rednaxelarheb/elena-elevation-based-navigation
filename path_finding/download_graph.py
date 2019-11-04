@@ -39,3 +39,7 @@ def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
     graph_ig.es[attr] = list(networkx.get_edge_attributes(graph, attr).values())
     # return igraph
     return graph_ig
+
+def get_testing_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
+    #TODO: return julian's static map, for tetsing/demo purposes
+    return graph_ig
