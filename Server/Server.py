@@ -4,6 +4,7 @@ import json
 from path_finding import download_graph
 from path_finding import solver
 
+# load flask server config from json and update setting
 settings_path = './appconfig.json'
 json_data = open(settings_path).read()
 settings = json.loads(json_data)
@@ -35,22 +36,20 @@ length: FLOAT
 @app.route('/get_route', methods=['POST'])
 def get_route():
     input_data = json.loads(request.get_json())
-    #TODO validate json passed in using jsonvalidator library?
+    # TODO validate json passed in using jsonvalidator library?
     print(input_data['start_address']['latitude'])
     latitude = input_data['start_address']['latitude']
     longitude = input_data['start_address']['longitude']
-    radius = input_data['length']/2
+    radius = input_data['length'] / 2
     unknown_parameter = input_data['max_or_minimize_change']
 
-    #TODO process input data and compute best route and return it for rendering
+    # TODO process input data and compute best route and return it for rendering
 
     graph = download_graph.get_graph(latitude, longitude, radius)
-    res = solver(graph, latitude,longitude,unknown_parameter,input_data['length']).solve()
+    res = solver(graph, latitude, longitude, unknown_parameter, input_data['length']).solve()
 
     print("this function was called)")
     return jsonify(res)
-
-
 
 
 if __name__ == '__main__':

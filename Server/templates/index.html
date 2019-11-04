@@ -6,9 +6,7 @@
 
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
-    <script crossorigin="anonymous"
-            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-            src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script crossorigin="anonymous"
             integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
             src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -33,6 +31,7 @@
         <div class="col-4" id='control_box'>
             <div class="input-group col-3">
                 <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
+                       id='start-address'
                        placeholder="Where to start?" type="text">
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" id="button-go" type="button" onclick="">Go!</button>
@@ -48,16 +47,64 @@
 <!--    TODO move this script to external file for loading-->
 <script>
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
-var map = new mapboxgl.Map({
-container: 'map', // container id
-style: 'mapbox://styles/mapbox/streets-v11', // stylesheet or maybe: 'mapbox://styles/mapbox/light-v9' ?
-center: [-72.526711, 42.391155], // starting position [lng, lat]
-zoom: 14 // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
-});
+mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
+
+
+function initMap() {
+    var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/mapbox/streets-v11', // stylesheet or maybe: 'mapbox://styles/mapbox/light-v9' ?
+        center: [-72.526711, 42.391155], // starting position [lng, lat]
+        zoom: 14 // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
+    });
+
+    isMapInit = true;
+    return map;
+}
+
+var isMapInit = false;
+var map = initMap();
+getLocation();
 
 $('#button-go').on('click', function(event) {
-    m
+    const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
+        + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
+    console.log(target);
+    $.get({
+        url: target,
+        success: function (data) {
+            console.log(data);
+            update(data);
+        }
+    })
 });
+
+function update(data) {
+    var lat = data.results[0].locations[0].latLng.lat;
+    var lng = data.results[0].locations[0].latLng.lng;
+    console.log(lat, lng);
+    map.flyTo({
+        center: [lng, lat],
+        zoom: 14,
+    });
+}
+
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+        console.log("Geolocation is not supported by this browser.");
+    }
+}
+
+function showPosition(position) {
+    let lat = position.coords.latitude;
+    let lng = position.coords.longitude;
+    map.flyTo({
+        center: [lng, lat],
+        zoom: 14,
+    })
+}
 
 </script>
 
