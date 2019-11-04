@@ -34,9 +34,9 @@ length: FLOAT
 """
 @app.route('/get_route', methods=['POST'])
 def get_route():
-    input_data = request.get_json()
+    input_data = json.loads(request.get_json())
     #TODO validate json passed in using jsonvalidator library?
-
+    print(input_data['start_address']['latitude'])
     latitude = input_data['start_address']['latitude']
     longitude = input_data['start_address']['longitude']
     radius = input_data['length']/2

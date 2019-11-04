@@ -2,7 +2,7 @@ import osmnx
 import networkx
 import igraph
 
-google_maps_api_key = 'ask_julian'
+google_maps_api_key = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw'
 
 def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
     '''Constructs a graph from street networks within a specified location.
