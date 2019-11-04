@@ -4,12 +4,12 @@ import typing
 import heapq
 
 class solver(object):
-    '''
+    """
     TODO: document me!
-    
+
     Example:
     >>> solver(graph, 50,50,1,10).solve()
-    '''
+    """
     def __init__(self, graph: igraph.Graph,
                  latitude: float, longitude: float,
                 altitude: float, distance: float,

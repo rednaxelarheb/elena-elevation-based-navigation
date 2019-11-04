@@ -4,7 +4,7 @@ import json
 from path_finding import download_graph
 from path_finding import solver
 
-settings_path = 'appconfig.json'
+settings_path = './appconfig.json'
 json_data = open(settings_path).read()
 settings = json.loads(json_data)
 
