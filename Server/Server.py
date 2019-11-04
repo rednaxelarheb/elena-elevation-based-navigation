@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 import json
 
+from path_finding import download_graph
+from path_finding import solver
 
 settings_path = 'appconfig.json'
 json_data = open(settings_path).read()
@@ -26,29 +28,27 @@ EXPECTED FORMAT OF JSON PASSED IN:
 "latitude": FLOAT,
 "longitude": FLOAT
 }, 
-"other_points_to_include" = [
-{
-"latitude": FLOAT,
-"longitude": FLOAT
-},...
-{
-"latitude": FLOAT,
-"longitude": FLOAT
-}],
-
 "max_or_minimize_change": Boolean,
-"cycle_or_not": Boolean,
-
-"end_address": {
-"latitude": FLOAT,
-"longitude": FLOAT
-}}
+length: FLOAT
+}
 """
 @app.route('/get_route', methods=['POST'])
 def get_route():
     input_data = request.get_json()
+    #TODO validate json passed in using jsonvalidator library?
+
+    latitude = input_data['start_address']['latitude']
+    longitude = input_data['start_address']['longitude']
+    radius = input_data['length']/2
+    unknown_parameter = input_data['max_or_minimize_change']
+
     #TODO process input data and compute best route and return it for rendering
-    return jsonify("")
+
+    graph = download_graph.get_graph(latitude, longitude, radius)
+    res = solver(graph, latitude,longitude,unknown_parameter,input_data['length']).solve()
+
+    print("this function was called)")
+    return jsonify(res)
 
 
 

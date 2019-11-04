@@ -1,3 +1,4 @@
+import igraph
 import numpy as np
 import typing
 import heapq
