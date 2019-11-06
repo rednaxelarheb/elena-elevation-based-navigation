@@ -27,12 +27,13 @@
 <body>
     <h1> Elena Fitness App</h1>
     <div class="row col-12" id='row1'>
-        <div class="col-8" id='map'></div>
-        <div class="col-4" id='control_box'>
+        <div class="col-8" id='map' style='width: 400px; height: 600px;'></div>
+        <div class="col-4" id='control_box' style='width:200px'>
             <div class="input-group col-3">
                 <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
                        id='start-address'
-                       placeholder="Where to start?" type="text">
+                       placeholder="Where to start?" type="text"
+                       style='width:200px'>
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" id="button-go" type="button" onclick="">Go!</button>
                 </div>
@@ -110,7 +111,7 @@ function showPosition(position) {
     })
 }
 
-var route = [ [-72.5267224, 42.3942209],
+var lgrc_marston_route = [ [-72.5267224, 42.3942209],
               [-72.5266523, 42.3942427],
               [-72.5265448, 42.3942762],
               [-72.5263269, 42.3939052],
@@ -125,12 +126,14 @@ var route = [ [-72.5267224, 42.3942209],
               [-72.5292508, 42.3938264],
               [-72.5293035, 42.3939254], ];
 
+var route = lgrc_marston_route;
+
 function set_route_zoom() {
     var bounds = route.reduce(function(bounds, coord) {
             return bounds.extend(coord);
         }, new mapboxgl.LngLatBounds(route[0], route[0]));
 
-    map.fitBounds(bounds, {padding: 20});
+    map.fitBounds(bounds, {padding: 40});
 }
 
 function show_route() {
@@ -160,21 +163,9 @@ function show_route() {
     });
 }
 
-function convert_to_api_arg(input) {
-        var splits = input.split(" ");
-        var address = "";
-        var length = splits.length;
-        for (i = 0; i < (length - 1); i++) {
-            address = address.concat(splits[i], "%20");
-        }
-        address = address.concat(splits[length - 1]);
-    return address;
-}
-
 function get_lat_long() {
    var input = document.getElementById("address_input").value;
-   var address = convert_to_api_arg(input);
-   // 179%20Main%20St%20Grafton%20MA%2001560
+   var address = input.split(" ").join("%20");
    $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
           address +
           ".json?access_token=" +
