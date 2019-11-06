@@ -43,6 +43,10 @@
 
     <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
 
+<button onclick="show_route()">Show Route</button>
+Address: <input type="text" id="address_input">
+<button onclick="get_lat_long()">Click me to get address Lat/Long</button>
+<p id = "lat_long_here"></p>
 
 <!--    TODO move this script to external file for loading-->
 <script>
@@ -106,8 +110,82 @@ function showPosition(position) {
     })
 }
 
-</script>
+var route = [ [-72.5267224, 42.3942209],
+              [-72.5266523, 42.3942427],
+              [-72.5265448, 42.3942762],
+              [-72.5263269, 42.3939052],
+              [-72.5269955, 42.3936949],
+              [-72.5273381, 42.3939466],
+              [-72.5277246, 42.3946398],
+              [-72.5281995, 42.3946879],
+              [-72.528568, 42.3945891],
+              [-72.5286749, 42.3945466],
+              [-72.5290824, 42.394426],
+              [-72.5288819, 42.3939421],
+              [-72.5292508, 42.3938264],
+              [-72.5293035, 42.3939254], ];
 
+function set_route_zoom() {
+    var bounds = route.reduce(function(bounds, coord) {
+            return bounds.extend(coord);
+        }, new mapboxgl.LngLatBounds(route[0], route[0]));
+
+    map.fitBounds(bounds, {padding: 20});
+}
+
+function show_route() {
+    set_route_zoom();
+    map.addLayer({
+        "id": "route",
+        "type": "line",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": route
+                }
+            }
+        },
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            "line-color": "#888",
+            "line-width": 8
+        }
+    });
+}
+
+function convert_to_api_arg(input) {
+        var splits = input.split(" ");
+        var address = "";
+        var length = splits.length;
+        for (i = 0; i < (length - 1); i++) {
+            address = address.concat(splits[i], "%20");
+        }
+        address = address.concat(splits[length - 1]);
+    return address;
+}
+
+function get_lat_long() {
+   var input = document.getElementById("address_input").value;
+   var address = convert_to_api_arg(input);
+   // 179%20Main%20St%20Grafton%20MA%2001560
+   $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
+          address +
+          ".json?access_token=" +
+          mapboxgl.accessToken,
+          function(data, status){
+            var latlong = JSON.stringify(data.features[0].center)
+            document.getElementById("lat_long_here").innerHTML = latlong
+    },'json');
+}
+
+</script>
 
 
 </body>
