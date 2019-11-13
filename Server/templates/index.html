@@ -25,7 +25,7 @@
 </style>
 </head>
 <body>
-    <h1> Elena Fitness App</h1>
+    <h1> Elevate </h1>
     <div class="row col-12" id='row1'>
         <div class="col-8 col-md-8" id='map'></div>
         <div class="col-4" id='control_box'>
@@ -183,35 +183,64 @@ function set_route_zoom() {
 
 function show_route() {
     set_route_zoom();
-    map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": {
-            "type": "geojson",
-            "data": {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": route
-                }
+    var geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": route,
+                "type": "LineString"
             }
+        }]
+    };
+
+    // 'line-gradient' can only be used with GeoJSON sources
+    // and the source must have the 'lineMetrics' option set to true
+    map.addSource('line', {
+            type: 'geojson',
+            lineMetrics: true,
+            data: geojson
+        });
+    
+    // the layer must be of type 'line'
+    map.addLayer({
+        type: 'line',
+        source: 'line',
+        id: 'line',
+        paint: {
+            'line-color': 'red',
+            'line-width': 14,
+            // 'line-gradient' must be specified using an expression
+            // with the special 'line-progress' property
+            'line-gradient': [
+                'interpolate',
+                ['linear'],
+                ['line-progress'],
+                0.0, "red",
+                0.1, "yellow",
+                0.2, "lime",
+                0.3, "cyan",
+                0.4, "royalblue",
+                0.5, "blue",
+                0.6, "royalblue",
+                0.7, "cyan",
+                0.8, "lime",
+                0.9, "yellow",
+                1.0, "red"
+            ]
         },
-        "layout": {
-            "line-join": "round",
-            "line-cap": "round"
-        },
-        "paint": {
-            "line-color": "#888",
-            "line-width": 8
+        layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
         }
     });
 }
 
 function get_lat_long() {
-   var input = document.getElementById("address_input").value;
-   var address = input.split(" ").join("%20");
-   $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
+    var input = document.getElementById("address_input").value;
+    var address = input.split(" ").join("%20");
+    $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
           address +
           ".json?access_token=" +
           mapboxgl.accessToken,

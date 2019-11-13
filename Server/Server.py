@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import json
+import sys
+sys.path.insert(-1, '../')
 
 from path_finding import download_graph
 from path_finding import solver
