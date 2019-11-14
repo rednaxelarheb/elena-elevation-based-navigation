@@ -40,8 +40,8 @@ def get_route():
     input_data = json.loads(request.get_json())
     # TODO validate json passed in using jsonvalidator library?
     print(input_data['start_address']['latitude'])
-    latitude = input_data['start_address']['latitude']
-    longitude = input_data['start_address']['longitude']
+    latitude = float(input_data['start_address']['latitude'])
+    longitude = float(input_data['start_address']['longitude'])
     radius = input_data['length'] / 2
     unknown_parameter = input_data['max_or_minimize_change']
 
