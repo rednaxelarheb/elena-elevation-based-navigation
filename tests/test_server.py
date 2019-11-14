@@ -22,7 +22,12 @@ def test_get_route():
     }
     r = requests.post('http://localhost:5000/get_route', json=json.dumps(payload))
     print(r.status_code)
+    print(r.json())
 
 
+"""
+[edge_numbers,...], altitude change, distance)
+([280, 281], 0.0314, 146.526)
+"""
 if __name__ == '__main__':
     test_get_route()
