@@ -64,6 +64,8 @@ def get_route():
                 vertexid = edge_sequence[edge].source
                 #graph.vs[vertexid]
                 # elevation_change = graph.es[edge].attributes().get('grade') #elevation change
+                path.append({'total_elevation_change': route[1]})
+                path.append({'distance': route[2]})
                 point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "elevation_change": 0}
                 path.append(point)
                 vertexid2 = edge_sequence[edge].target
@@ -83,10 +85,10 @@ def get_route():
         route_name = "route%d" % count
         # print(path)
 
-        routes[route_name] = path
-    #total change
-    # altitude_change = route[1]
-    # distance = route[2]
+        routes[route_name] = path #
+
+
+
 
     # print("this function was called)")
     # print(routes)
