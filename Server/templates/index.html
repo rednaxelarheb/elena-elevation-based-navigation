@@ -70,6 +70,7 @@
     <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
 
     <button onclick="showRoute()">Show Route</button>
+    <button onclick="showServerRoute()">Show Server Route</button>
 Address: <input type="text" id="address_input">
     <button onclick="geocodingWithMapbox()">Click me to get address Lat/Long</button>
 <p id = "lat_long_here"></p>
@@ -88,12 +89,7 @@ function initMap() {
         zoom: 14 // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
     });
 
-    map.addControl(new mapboxgl.GeolocateControl({
-        positionOptions: {
-            enableHighAccuracy: true
-        },
-        trackUserLocation: true
-    }));
+    map.addControl(noTrackGeolocateController);
 
     let nav = new mapboxgl.NavigationControl();
     map.addControl(nav, 'top-left');
@@ -111,15 +107,40 @@ function initMap() {
 }
 
 var isMapInit = false;
+var noTrackGeolocateController = new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: false
+});
 var map = initMap();
 
+
 function getRoute() {
-    //TODO:get route form backend and render it
-    $.post("get_route", function (data) {
-        showRoute(data);
-    })
+    //TODO: pass in data, get route form backend and render it
+    $.post({
+        url: "get_route",
+        data: '',
+        contentType: 'application/json',
+        success: function (data) {
+            console.log(data);
+            showRoute(data);
+        },
+    },)
 }
 
+function showServerRoute() {
+    //TODO: debug
+    $.post({
+        url: "get_route",
+        data: JSON.stringify({"start_address": {"latitude": 50, "longitude": 50}, "length": 2}),
+        contentType: 'application/json',
+        success: function (data) {
+            console.log(data);
+            showRoute(data);
+        },
+    },)
+}
 function getCurrentPosition(callback) {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(callback);
@@ -267,18 +288,19 @@ function showRoute() {
 function geocodingWithMapquest() {
     const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
         + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
-    console.log(target);
+    // console.log(target);
     $.get({
         url: target,
         success: function (data) {
-            console.log(data);
+            // console.log(data);
             var lat = data.results[0].locations[0].latLng.lat;
             var lng = data.results[0].locations[0].latLng.lng;
-            console.log(lat, lng);
+            // console.log(lat, lng);
             map.flyTo({
                 center: [lng, lat],
                 zoom: 14,
             });
+            getRoute();
         }
     })
 }
@@ -309,10 +331,13 @@ function showAddress(position) {
             console.log(address);
             $('#start-address').val(address);
         }, 'json');
-    map.flyTo({
-        center: [lng, lat],
-        zoom: 14,
-    })
+    //TODO:trigger geolocate controller to show a blue dot on the map, but will ask for permission twice,
+    // might want to use Marker controller instead?
+    noTrackGeolocateController.trigger();
+    // map.flyTo({
+    //     center: [lng, lat],
+    //     zoom: 14,
+    // })
 }
 
 </script>
