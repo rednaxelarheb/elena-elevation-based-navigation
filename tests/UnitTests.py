@@ -18,7 +18,7 @@ class TestServers(unittest.TestCase):
         self.assertGreaterEqual(len(routes)+1, 1) #must be at least one route returned
 
         for x in range(1,len(routes)):
-            print('route%d:'% x, )
+            # print('route%d:'% x, )
             #TODO check that start and end point for each route is the same (lat/long should be same)
             first_vertex = routes['route%d' % x][3]
             last_vertex = routes['route%d' % x][len(routes['route%d' % x])-1]

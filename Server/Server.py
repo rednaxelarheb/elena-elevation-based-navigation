@@ -46,7 +46,7 @@ def get_route():
 
     # TODO process input data and compute best route and return it for rendering
 
-    graph = download_graph.get_graph(latitude, longitude, radius)
+    graph = download_graph.download_graph(latitude, longitude, radius)
     res = solver.solver(graph, latitude, longitude, unknown_parameter, radius*2).solve()
     print(res)
     routes = {}
