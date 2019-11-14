@@ -25,14 +25,15 @@
 </style>
 </head>
 <body>
-    <h1> Elena Fitness App</h1>
+    <h1> Elevate </h1>
     <div class="row col-12" id='row1'>
-        <div class="col-8" id='map'></div>
+        <div class="col-8 col-md-8" id='map'></div>
         <div class="col-4" id='control_box'>
             <div class="input-group col-3">
                 <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
                        id='start-address'
-                       placeholder="Where to start?" type="text">
+                       placeholder="Where to start?" type="text"
+                       style='width:200px'>
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" id="button-go" type="button" onclick="">Go!</button>
                 </div>
@@ -43,6 +44,10 @@
 
     <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
 
+<button onclick="show_route()">Show Route</button>
+Address: <input type="text" id="address_input">
+<button onclick="get_lat_long()">Click me to get address Lat/Long</button>
+<p id = "lat_long_here"></p>
 
 <!--    TODO move this script to external file for loading-->
 <script>
@@ -106,8 +111,146 @@ function showPosition(position) {
     })
 }
 
-</script>
+var lgrc_marston_route = [ 
+              [-72.5267224, 42.3942209],
+              [-72.5266523, 42.3942427],
+              [-72.5265448, 42.3942762],
+              [-72.5263269, 42.3939052],
+              [-72.5269955, 42.3936949],
+              [-72.5273381, 42.3939466],
+              [-72.5277246, 42.3946398],
+              [-72.5281995, 42.3946879],
+              [-72.528568, 42.3945891],
+              [-72.5286749, 42.3945466],
+              [-72.5290824, 42.394426],
+              [-72.5288819, 42.3939421],
+              [-72.5292508, 42.3938264],
+              [-72.5293035, 42.3939254], 
+              ];
 
+var campus_loop_route = [
+              <!-- [-72.5267224, 42.3942209], -->
+              <!-- [-72.5266523, 42.3942427], -->
+              <!-- [-72.5265448, 42.3942762], -->
+              <!-- [-72.5263269, 42.3939052], -->
+              <!-- [-72.5269955, 42.3936949], -->
+              [-72.5271314, 42.3936519],
+              [-72.5279197, 42.3934026],
+              [-72.5280705, 42.3936787],
+              [-72.528568, 42.3945891],
+              [-72.5286749, 42.3945466],
+              [-72.5290824, 42.394426],
+              [-72.5288819, 42.3939421],
+              [-72.5292508, 42.3938264],
+              [-72.5293035, 42.3939254],
+              [-72.5293035, 42.3939254],
+              [-72.5292508, 42.3938264],
+              [-72.5288408, 42.3937322],
+              [-72.5286577, 42.3935782],
+              [-72.5285486, 42.3934142],
+              [-72.5286778, 42.3931534],
+              [-72.5283612, 42.3932528],
+              [-72.5282097, 42.3929871],
+              <!-- [-72.5279098, 42.3924841], -->
+              <!-- [-72.5281986, 42.3921527], -->
+              <!-- [-72.5281986, 42.3921527], -->
+              [-72.5279098, 42.3924841],
+              [-72.527864, 42.3924199],
+              [-72.5275371, 42.3926385],
+              [-72.5271412, 42.3927435],
+              <!-- [-72.5267823, 42.3929566], -->
+              <!-- [-72.527568, 42.3931221], -->
+              <!-- [-72.527568, 42.3931221], -->
+              [-72.5267823, 42.3929566],
+              [-72.5266706, 42.3930229],
+              [-72.5271314, 42.3936519],
+              <!-- [-72.5269955, 42.3936949], -->
+              <!-- [-72.5263269, 42.3939052], -->
+              <!-- [-72.5265448, 42.3942762], -->
+              <!-- [-72.5266523, 42.3942427], -->
+              <!-- [-72.5267224, 42.3942209], -->
+              ];
+
+var route = campus_loop_route;
+
+function set_route_zoom() {
+    var bounds = route.reduce(function(bounds, coord) {
+            return bounds.extend(coord);
+        }, new mapboxgl.LngLatBounds(route[0], route[0]));
+
+    map.fitBounds(bounds, {padding: 40});
+}
+
+function show_route() {
+    set_route_zoom();
+    var geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": route,
+                "type": "LineString"
+            }
+        }]
+    };
+
+    // 'line-gradient' can only be used with GeoJSON sources
+    // and the source must have the 'lineMetrics' option set to true
+    map.addSource('line', {
+            type: 'geojson',
+            lineMetrics: true,
+            data: geojson
+        });
+    
+    // the layer must be of type 'line'
+    map.addLayer({
+        type: 'line',
+        source: 'line',
+        id: 'line',
+        paint: {
+            'line-color': 'red',
+            'line-width': 14,
+            // 'line-gradient' must be specified using an expression
+            // with the special 'line-progress' property
+            'line-gradient': [
+                'interpolate',
+                ['linear'],
+                ['line-progress'],
+                0.0, "red",
+                0.1, "yellow",
+                0.2, "lime",
+                0.3, "cyan",
+                0.4, "royalblue",
+                0.5, "blue",
+                0.6, "royalblue",
+                0.7, "cyan",
+                0.8, "lime",
+                0.9, "yellow",
+                1.0, "red"
+            ]
+        },
+        layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
+        }
+    });
+}
+
+function get_lat_long() {
+    var input = document.getElementById("address_input").value;
+    var address = input.split(" ").join("%20");
+    $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
+          address +
+          ".json?access_token=" +
+          mapboxgl.accessToken,
+          function(data, status){
+            var latlong = JSON.stringify(data.features[0].center)
+            document.getElementById("lat_long_here").innerHTML = latlong
+    },'json');
+}
+
+</script>
 
 
 </body>
