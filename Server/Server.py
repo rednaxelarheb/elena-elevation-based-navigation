@@ -39,7 +39,6 @@ length: FLOAT
 def get_route():
     input_data = json.loads(request.get_json())
     # TODO validate json passed in using jsonvalidator library?
-    # print(input_data['start_address']['latitude'])
     latitude = float(input_data['start_address']['latitude'])
     longitude = float(input_data['start_address']['longitude'])
     radius = input_data['length'] / 2
@@ -49,11 +48,10 @@ def get_route():
 
     graph = download_graph.get_graph(latitude, longitude, radius)
     res = solver.solver(graph, latitude, longitude, unknown_parameter, radius*2).solve()
-
+    print(res)
     routes = {}
     count = 0;
     edge_sequence = graph.es
-    vertex_sequence = graph.vs
     for route in res:
         edges = route[0]
         index = 0
