@@ -12,7 +12,7 @@ class TestServers(unittest.TestCase):
             "max_or_minimize_change": True,
             'length': 2
         }
-        r = requests.post('http://localhost:5000/get_route', json=json.dumps(payload))
+        r = requests.post('http://localhost:5000/get_route', json=payload)
         self.assertEqual(r.status_code, 200) #check that our request was successful
         routes = r.json()
         self.assertGreaterEqual(len(routes)+1, 1) #must be at least one route returned
