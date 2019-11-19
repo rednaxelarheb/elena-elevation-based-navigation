@@ -46,7 +46,7 @@ def get_route():
 
     # TODO process input data and compute best route and return it for rendering
 
-    graph = download_graph.get_graph(latitude, longitude, radius)
+    graph = download_graph.download_graph(latitude, longitude, radius)
     res = solver.solver(graph, latitude, longitude, unknown_parameter, radius*2).solve()
     print(res)
     routes = {}
@@ -67,12 +67,12 @@ def get_route():
                 point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "elevation_change": 0}
                 path.append(point)
                 vertexid2 = edge_sequence[edge].target
-                point = {"latitude": graph.vs[vertexid2].attributes().get('y'), "longitude": graph.vs[vertexid2].attributes().get('x'), "elevation_change": graph.es[edge].attributes().get('grade')}
+                point = {"latitude": graph.vs[vertexid2].attributes().get('y'), "longitude": graph.vs[vertexid2].attributes().get('x'), "elevation_change": graph.es[edge].attributes().get('grade')*graph.es[edge].attributes().get('length')}
                 path.append(point)
                 index+=2
             else:
                 vertexid = edge_sequence[edge].target
-                point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "elevation_change": 0}
+                point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "elevation_change": graph.es[edge].attributes().get('grade')*graph.es[edge].attributes().get('length')}
                 path.append(point)
                 index +=1
 

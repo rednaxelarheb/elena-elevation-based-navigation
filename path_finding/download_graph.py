@@ -6,7 +6,7 @@ import json
 
 this_files_dir = os.path.dirname(os.path.realpath(__file__))
 
-def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
+def download_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
     '''Constructs a graph from street networks within a specified location.
     
     Args:
@@ -18,6 +18,7 @@ def get_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
         Nodes have 'x' (latitude), 'y' (longitude), and 'osmid' (id) attributes.
         Edges have 'length' (distance), 'grade' (change in elevation), and 'name' attributes.
     '''
+    latitude, longitude, radius = [float(x) for x in (latitude, longitude, radius)]
     filename = json.dumps([latitude, longitude, radius]) + '.zip'
     filename = os.path.join(this_files_dir, 'saved_graphs', filename)
     if os.path.exists(filename):
@@ -58,3 +59,5 @@ def _get_graph_not_memoized(latitude: float, longitude: float, radius: float,
     graph_ig.es[attr] = list(networkx.get_edge_attributes(graph, attr).values())
     # return igraph
     return graph_ig
+
+__all__ = ['download_graph']
