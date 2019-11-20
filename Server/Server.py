@@ -64,15 +64,15 @@ def get_route():
                 # elevation_change = graph.es[edge].attributes().get('grade') #elevation change
                 path.append({'total_elevation_change': route[1]})
                 path.append({'distance': route[2]})
-                point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "elevation_change": 0}
+                point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "gradient": graph.es[edge].attributes().get('grade')}
                 path.append(point)
                 vertexid2 = edge_sequence[edge].target
-                point = {"latitude": graph.vs[vertexid2].attributes().get('y'), "longitude": graph.vs[vertexid2].attributes().get('x'), "elevation_change": graph.es[edge].attributes().get('grade')*graph.es[edge].attributes().get('length')}
+                point = {"latitude": graph.vs[vertexid2].attributes().get('y'), "longitude": graph.vs[vertexid2].attributes().get('x'), "gradient": graph.es[edge].attributes().get('grade')}
                 path.append(point)
                 index+=2
             else:
                 vertexid = edge_sequence[edge].target
-                point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "elevation_change": graph.es[edge].attributes().get('grade')*graph.es[edge].attributes().get('length')}
+                point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "gradient": graph.es[edge].attributes().get('grade')}
                 path.append(point)
                 index +=1
 
