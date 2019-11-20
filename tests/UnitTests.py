@@ -26,6 +26,29 @@ class TestServers(unittest.TestCase):
             self.assertEqual((first_vertex['latitude'], first_vertex['longitude']),(last_vertex['latitude'], last_vertex['longitude']) , 'route end points did not match')
             # print(len(routes['route%d' % x]))
 
+    def test_invalid_get_route(self):
+        payload = {
+            "start_address": {
+                "latitude": "something",
+                "longitude": 50
+            },
+            "max_or_minimize_change": True,
+            'length': 2
+        }
+        r = requests.post('{}/get_route'.format(self.server_location), json=payload)
+        self.assertEqual(r.status_code, 600) #parameter types is wrong
+
+        #TODO test if required parameter is missing causes error
+        payload = {
+            "start_address": {
+                "longitude": 50
+            },
+            "max_or_minimize_change": True,
+            'length': 2
+        }
+        r = requests.post('{}/get_route'.format(self.server_location), json=payload)
+        self.assertEqual(r.status_code, 600) #parameter types is wrong
+
 
     def test_get_home(self):
         print()
