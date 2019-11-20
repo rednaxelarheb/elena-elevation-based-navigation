@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, render_template, Response
 import json
 import sys
-# sys.path.insert(-1, '../')
+sys.path.insert(-1, '../')
 import jsonschema
+
 from path_finding import download_graph
 from path_finding import solver
 
@@ -38,7 +39,7 @@ length: FLOAT
 @app.route('/get_route', methods=['POST'])
 def get_route():
     input_data = request.get_json()
-    ######
+
     valid = validate_json_in(input_data)
     if valid:
 
