@@ -25,6 +25,13 @@ class path_profile(object):
         self.total_distance = self.distances[-1]
 
         return self
+    
+    def from_total_uphill_and_dist(self, uphill: float, distance: float):
+        self.altitudes = [0, uphill]
+        self.distances = [0, distance]
+        self.total_distance = distance
+        self.total_uphill = uphill
+        return self
 
 
 __all__ = ['path_profile']

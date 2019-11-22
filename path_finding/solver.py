@@ -11,27 +11,30 @@ class solver(object):
         graph: an igraph object (see `path_finding.download_graph.download_graph`)
         latitude: the latitude of the starting location
         longitude: the longitude of the starting location
-        altitude: the desired altitude change
-        distance: the desired distance traveled
+        desired_profile: the desired profile that we aim to match, as defined by `cost_fn`
+        cost_fn: evaluates the cost of the `path_profile` of a proposed solution
 
     Example:
-    >>> solver(graph, 50,50,100,500).solve()
+    >>> from path_finding import *
+    >>> graph = download_graph(50, 50, 1)
+    >>> desired_profile = path_profile().from_total_uphill_and_dist(100, 500)
+    >>> solver(graph, 50, 50, desired_profile).solve()
     '''
     def __init__(self, graph: igraph.Graph,
-                 latitude: float, longitude: float,
-                altitude: float, distance: float,
+                latitude: float, longitude: float,
+                desired_profile: path_profile,
                 cost_fn: typing.Union[None, typing.Callable[[path_profile], float]]=None):
         self.graph = graph
         assert graph.vcount() > 0, 'Graph must contain at least 1 vertex'
         assert graph.ecount() > 0, 'Graph must contain at least 1 edge'
         self.start = self._find_nearest_vertex(latitude, longitude)
-        self.altitude = altitude
-        self.distance = distance
         self.max_path_length = 50
+        self.desired_profile = desired_profile
         if cost_fn is None:
             def default_cost_fn(profile):
-                err_alt = abs(self.altitude - profile.total_uphill) / max(1e-6, self.altitude)
-                err_dist = abs(self.distance - profile.total_distance) / max(1e-6, self.distance)
+                dp = self.desired_profile
+                err_alt = abs(dp.total_uphill - profile.total_uphill) / max(1e-6, dp.total_uphill)
+                err_dist = abs(dp.total_distance - profile.total_distance) / max(1e-6, dp.total_distance)
                 return err_alt + err_dist
             self.cost_fn = default_cost_fn
         else:
@@ -58,10 +61,10 @@ class solver(object):
         edge_path = []
 
         def should_terminate(alt, dist):
-            if alt > self.altitude: return True
-            elif dist > self.distance: return True
-            else: return False
-        
+            exceed_uphill = alt > self.desired_profile.total_uphill
+            exceed_dist = dist > self.desired_profile.total_distance
+            return exceed_uphill or exceed_dist
+            
         while not should_terminate(alt, dist):
             next_node = np.random.choice(self.graph.neighbors(last_node))
             edge_id = self.graph.get_eid(last_node, next_node)
