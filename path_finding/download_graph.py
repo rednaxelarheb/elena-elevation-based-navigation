@@ -27,7 +27,6 @@ def download_graph(latitude: float, longitude: float, radius: float) -> igraph.G
     for file in res:
         params = file[1:-5]
         variables = params.split(', ')
-        print(variables)
         if float(variables[0].strip()) == latitude and float(variables[1].strip()) == latitude and float(variables[2]) >= radius: #check if previously computed graph centered on same lat/long of equal or smaller radius was cached
             filename = os.path.join(this_files_dir, 'saved_graphs', file)
             break
