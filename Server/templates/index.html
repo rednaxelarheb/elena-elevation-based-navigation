@@ -25,24 +25,55 @@
 </style>
 </head>
 <body>
-    <h1> Elena Fitness App</h1>
-    <div class="row col-12" id='row1'>
-        <div class="col-8" id='map'></div>
-        <div class="col-4" id='control_box'>
-            <div class="input-group col-3">
-                <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
-                       id='start-address'
-                       placeholder="Where to start?" type="text">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" id="button-go" type="button" onclick="">Go!</button>
+    <h1> Elevate </h1>
+
+    <div class="d-md-flex h-md-100 align-items-center">
+
+        <!-- First Half -->
+
+        <div class="col-md-8 p-0 bg-indigo h-md-100" id="map">
+        </div>
+
+        <!-- Second Half -->
+
+        <div class="col-md-4 p-0 bg-white h-md-100 ">
+            <div class="row col-md-12" id='row1'>
+                <div class="col-md-12" id='control_box'>
+                    <div class="input-group col-md-12">
+                        <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
+                               id='start-address'
+                               placeholder="Where to start?" style='width:200px'
+                               type="text">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" id="button-locate"
+                                    onclick="getCurrentPosition(showAddress)" type="button">📍
+                                <button class="btn btn-outline-secondary" id="button-go"
+                                        onclick="geocodingWithMapquest()" type="button">Go!
+                                </button>
+                        </div>
+                    </div>
                 </div>
+
+            </div>
+            <div class="row col-md-12" id='row2'>
+                <label class="col-md-2 col-form-label" for="example-number-input">Distance</label>
+                <div class="col-md-8">
+                    <input class="form-control" id="example-number-input" type="number" value="42">
+                </div>
+                <label class="col-md-2 col-form-label" for="example-number-input">miles</label>
             </div>
         </div>
 
     </div>
 
+
     <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
 
+    <button onclick="showRoute()">Show Route</button>
+    <button onclick="showServerRoute()">Show Server Route</button>
+Address: <input type="text" id="address_input">
+    <button onclick="geocodingWithMapbox()">Click me to get address Lat/Long</button>
+<p id = "lat_long_here"></p>
 
 <!--    TODO move this script to external file for loading-->
 <script>
@@ -51,47 +82,68 @@ mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
 
 function initMap() {
-    var map = new mapboxgl.Map({
+    let map = new mapboxgl.Map({
         container: 'map', // container id
         style: 'mapbox://styles/mapbox/streets-v11', // stylesheet or maybe: 'mapbox://styles/mapbox/light-v9' ?
         center: [-72.526711, 42.391155], // starting position [lng, lat]
         zoom: 14 // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
     });
 
+    map.addControl(noTrackGeolocateController);
+
+    let nav = new mapboxgl.NavigationControl();
+    map.addControl(nav, 'top-left');
+
+    let scale = new mapboxgl.ScaleControl({
+        maxWidth: 80,
+        unit: 'imperial'
+    });
+    map.addControl(scale);
+
+    scale.setUnit('metric');
+
     isMapInit = true;
     return map;
 }
 
 var isMapInit = false;
+var noTrackGeolocateController = new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: false
+});
 var map = initMap();
-getLocation();
 
-$('#button-go').on('click', function(event) {
-    const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
-        + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
-    console.log(target);
-    $.get({
-        url: target,
+
+function getRoute() {
+    //TODO: pass in data, get route form backend and render it
+    $.post({
+        url: "get_route",
+        data: '',
+        contentType: 'application/json',
         success: function (data) {
             console.log(data);
-            update(data);
-        }
-    })
-});
-
-function update(data) {
-    var lat = data.results[0].locations[0].latLng.lat;
-    var lng = data.results[0].locations[0].latLng.lng;
-    console.log(lat, lng);
-    map.flyTo({
-        center: [lng, lat],
-        zoom: 14,
-    });
+            showRoute(data);
+        },
+    },)
 }
 
-function getLocation() {
+function showServerRoute() {
+    //TODO: debug
+    $.post({
+        url: "get_route",
+        data: JSON.stringify({"start_address": {"latitude": 50, "longitude": 50}, "length": 2}),
+        contentType: 'application/json',
+        success: function (data) {
+            console.log(data);
+            showRoute(data);
+        },
+    },)
+}
+function getCurrentPosition(callback) {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
+        navigator.geolocation.getCurrentPosition(callback);
     } else {
         console.log("Geolocation is not supported by this browser.");
     }
@@ -106,8 +158,189 @@ function showPosition(position) {
     })
 }
 
-</script>
+var lgrc_marston_route = [ 
+              [-72.5267224, 42.3942209],
+              [-72.5266523, 42.3942427],
+              [-72.5265448, 42.3942762],
+              [-72.5263269, 42.3939052],
+              [-72.5269955, 42.3936949],
+              [-72.5273381, 42.3939466],
+              [-72.5277246, 42.3946398],
+              [-72.5281995, 42.3946879],
+              [-72.528568, 42.3945891],
+              [-72.5286749, 42.3945466],
+              [-72.5290824, 42.394426],
+              [-72.5288819, 42.3939421],
+              [-72.5292508, 42.3938264],
+              [-72.5293035, 42.3939254], 
+              ];
 
+var campus_loop_route = [
+              <!-- [-72.5267224, 42.3942209], -->
+              <!-- [-72.5266523, 42.3942427], -->
+              <!-- [-72.5265448, 42.3942762], -->
+              <!-- [-72.5263269, 42.3939052], -->
+              <!-- [-72.5269955, 42.3936949], -->
+              [-72.5271314, 42.3936519],
+              [-72.5279197, 42.3934026],
+              [-72.5280705, 42.3936787],
+              [-72.528568, 42.3945891],
+              [-72.5286749, 42.3945466],
+              [-72.5290824, 42.394426],
+              [-72.5288819, 42.3939421],
+              [-72.5292508, 42.3938264],
+              [-72.5293035, 42.3939254],
+              [-72.5293035, 42.3939254],
+              [-72.5292508, 42.3938264],
+              [-72.5288408, 42.3937322],
+              [-72.5286577, 42.3935782],
+              [-72.5285486, 42.3934142],
+              [-72.5286778, 42.3931534],
+              [-72.5283612, 42.3932528],
+              [-72.5282097, 42.3929871],
+              <!-- [-72.5279098, 42.3924841], -->
+              <!-- [-72.5281986, 42.3921527], -->
+              <!-- [-72.5281986, 42.3921527], -->
+              [-72.5279098, 42.3924841],
+              [-72.527864, 42.3924199],
+              [-72.5275371, 42.3926385],
+              [-72.5271412, 42.3927435],
+              <!-- [-72.5267823, 42.3929566], -->
+              <!-- [-72.527568, 42.3931221], -->
+              <!-- [-72.527568, 42.3931221], -->
+              [-72.5267823, 42.3929566],
+              [-72.5266706, 42.3930229],
+              [-72.5271314, 42.3936519],
+              <!-- [-72.5269955, 42.3936949], -->
+              <!-- [-72.5263269, 42.3939052], -->
+              <!-- [-72.5265448, 42.3942762], -->
+              <!-- [-72.5266523, 42.3942427], -->
+              <!-- [-72.5267224, 42.3942209], -->
+              ];
+
+var cur_route = campus_loop_route;
+
+function setRouteZoom(route) {
+    var bounds = route.reduce(function (bounds, coord) {
+            return bounds.extend(coord);
+    }, new mapboxgl.LngLatBounds(cur_route[0], cur_route[0]));
+
+    map.fitBounds(bounds, {padding: 40});
+}
+
+function showRoute() {
+    setRouteZoom(cur_route);
+    var geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": cur_route,
+                "type": "LineString"
+            }
+        }]
+    };
+
+    // 'line-gradient' can only be used with GeoJSON sources
+    // and the source must have the 'lineMetrics' option set to true
+    map.addSource('line', {
+            type: 'geojson',
+            lineMetrics: true,
+            data: geojson
+        });
+    
+    // the layer must be of type 'line'
+    map.addLayer({
+        type: 'line',
+        source: 'line',
+        id: 'line',
+        paint: {
+            'line-color': 'red',
+            'line-width': 14,
+            // 'line-gradient' must be specified using an expression
+            // with the special 'line-progress' property
+            'line-gradient': [
+                'interpolate',
+                ['linear'],
+                ['line-progress'],
+                0.0, "red",
+                0.1, "yellow",
+                0.2, "lime",
+                0.3, "cyan",
+                0.4, "royalblue",
+                0.5, "blue",
+                0.6, "royalblue",
+                0.7, "cyan",
+                0.8, "lime",
+                0.9, "yellow",
+                1.0, "red"
+            ]
+        },
+        layout: {
+            'line-cap': 'round',
+            'line-join': 'round',
+            // 'line-opacity': 0.75,
+        }
+    });
+}
+
+function geocodingWithMapquest() {
+    const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
+        + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
+    // console.log(target);
+    $.get({
+        url: target,
+        success: function (data) {
+            // console.log(data);
+            var lat = data.results[0].locations[0].latLng.lat;
+            var lng = data.results[0].locations[0].latLng.lng;
+            // console.log(lat, lng);
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 14,
+            });
+            getRoute();
+        }
+    })
+}
+
+function geocodingWithMapbox() {
+    var input = document.getElementById("address_input").value;
+    var address = input.split(" ").join("%20");
+    $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
+          address +
+          ".json?access_token=" +
+          mapboxgl.accessToken,
+          function(data, status){
+              var latlong = JSON.stringify(data.features[0].center);
+            document.getElementById("lat_long_here").innerHTML = latlong
+    },'json');
+}
+
+function showAddress(position) {
+    let lat = position.coords.latitude;
+    let lng = position.coords.longitude;
+    let apiAddress = "https://api.mapbox.com/geocoding/v5/mapbox.places/" +
+        lng + "%2C" + lat +
+        ".json?access_token=" +
+        mapboxgl.accessToken;
+    $.get( apiAddress,
+        function (data, status) {
+            var address = data.features[0].place_name;
+            console.log(address);
+            $('#start-address').val(address);
+        }, 'json');
+    //TODO:trigger geolocate controller to show a blue dot on the map, but will ask for permission twice,
+    // might want to use Marker controller instead?
+    noTrackGeolocateController.trigger();
+    // map.flyTo({
+    //     center: [lng, lat],
+    //     zoom: 14,
+    // })
+}
+
+</script>
 
 
 </body>

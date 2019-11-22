@@ -19,8 +19,19 @@ def download_graph(latitude: float, longitude: float, radius: float) -> igraph.G
         Edges have 'length' (distance), 'grade' (change in elevation), and 'name' attributes.
     '''
     latitude, longitude, radius = [float(x) for x in (latitude, longitude, radius)]
-    filename = json.dumps([latitude, longitude, radius]) + '.zip'
-    filename = os.path.join(this_files_dir, 'saved_graphs', filename)
+    # filename = json.dumps([latitude, longitude, radius]) + '.zip'
+    # filename = os.path.join(this_files_dir, 'saved_graphs', filename)
+
+    filename = 'pweweq'
+    res = os.listdir(os.path.join(this_files_dir,'saved_graphs/'))
+    for file in res:
+        params = file[1:-5]
+        variables = params.split(', ')
+        print(variables)
+        if float(variables[0].strip()) == latitude and float(variables[1].strip()) == latitude and float(variables[2]) >= radius: #check if previously computed graph centered on same lat/long of equal or smaller radius was cached
+            filename = os.path.join(this_files_dir, 'saved_graphs', file)
+            break
+
     if os.path.exists(filename):
         graph = igraph.Graph.Read_GraphMLz(filename)
     else:
