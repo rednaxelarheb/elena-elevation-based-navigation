@@ -2,6 +2,7 @@ import igraph
 import numpy as np
 import typing
 import heapq
+from collections import Counter
 from path_finding.path_profile import path_profile
 
 class solver(object):
@@ -31,6 +32,7 @@ class solver(object):
         self.max_path_length = 50
         self.desired_profile = desired_profile
         if cost_fn is None:
+            # TODO use dynamic time warping (or another algorithm) as the default cost function 
             def default_cost_fn(profile):
                 dp = self.desired_profile
                 err_alt = abs(dp.total_uphill - profile.total_uphill) / max(1e-6, dp.total_uphill)
@@ -78,17 +80,18 @@ class solver(object):
         return edge_path
 
 
-    def _reconnect_path(self, path: typing.List[int], max_expansions: int=500) -> typing.Union[None, typing.List[int]]:
+    def _reconnect_path(self, path: typing.List[int], max_expansions: int=1000) -> typing.Union[None, typing.List[int]]:
         # pick a random vertex in the path that is not the source
         search_source_idx = np.random.randint(0, len(path)-1)
         search_source = self.graph.es[search_source_idx].target
-        vids_in_path = set([self.graph.es[e].target for e in path[search_source_idx+1:]])
+        vids_in_path = set(self.graph.es[e].target for e in path[search_source_idx+1:])
         # run BFS from `search_source`, search for a node in `vids_in_path`
         layer = [search_source]
         next_layer = []
         expansions = 0
         parents = dict()
         while True:
+            if not layer: return None
             for node in layer:
                 # check if we've exceeded our expansion budget
                 if expansions >= max_expansions:
@@ -150,7 +153,7 @@ class solver(object):
             path = self._random_path()
             profile = path_profile().from_path(self.graph, path)
             counter[0] -= 1
-            return (-1*self.cost_fn(profile), counter[0], path, profile)
+            return (-1*self.cost_fn(profile), counter[0], tuple(path), profile)
         
         def perturb(heap_item):
             _, _, old_path, _ = heap_item
@@ -160,20 +163,28 @@ class solver(object):
             else:
                 profile = path_profile().from_path(self.graph, new_path)
                 counter[0] -= 1
-                return (-1*self.cost_fn(profile), counter[0], new_path, profile)
+                return (-1*self.cost_fn(profile), counter[0], tuple(new_path), profile)
 
         heap = [generate() for _ in range(k_solutions)]
+        in_heap = Counter(t[2] for t in heap)
         heapq.heapify(heap)
 
+        def add_to_heap(heap_item):
+            if in_heap[heap_item[2]] == 0:
+                in_heap[heap_item[2]] += 1
+                heapq.heappush(heap, heap_item)
+                removed_path = heapq.heappop(heap)[2]
+                in_heap[removed_path] -= 1
+                if in_heap[removed_path] == 0: del in_heap[removed_path]
+
         for _ in range(1000):
-            heapq.heappush(heap, generate())
-            heapq.heappop(heap)
+            add_to_heap(generate())
         
         for _ in range(1000):
-            response = perturb(heap[np.random.randint(0, len(heap))])
-            if response is not None:
-                heapq.heappush(heap, response)
-                heapq.heappop(heap)
-
-        return [{'path': t[2], 'profile': t[3]} for t in sorted(heap, key=lambda t: -1*t[0])]
+            res = perturb(heap[np.random.randint(0, len(heap))])
+            if res is not None:
+                print("SUCCESFUL PERTURB") # TODO find out why perturbations are unsuccessful
+                add_to_heap(res)
+        
+        return [{'path': list(t[2]), 'profile': t[3]} for t in sorted(heap, key=lambda t: -1*t[0])]
 
