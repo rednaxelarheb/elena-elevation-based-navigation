@@ -16,7 +16,7 @@ def download_graph(latitude: float, longitude: float, radius: float) -> igraph.G
     Returns:
         An igraph containing the street network within the specified location.
         Nodes have 'x' (latitude), 'y' (longitude), and 'osmid' (id) attributes.
-        Edges have 'length' (distance), 'grade' (change in elevation), and 'name' attributes.
+        Edges have 'length' (distance), 'grade' (change in elevation), and 'streetname' attributes.
     '''
     latitude, longitude, radius = [float(x) for x in (latitude, longitude, radius)]
     filename = json.dumps([latitude, longitude, radius]) + '.zip'
