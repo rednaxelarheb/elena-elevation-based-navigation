@@ -19,11 +19,10 @@ def download_graph(latitude: float, longitude: float, radius: float) -> igraph.G
         Edges have 'length' (distance), 'grade' (change in elevation), and 'name' attributes.
     '''
     latitude, longitude, radius = [float(x) for x in (latitude, longitude, radius)]
-    # filename = json.dumps([latitude, longitude, radius]) + '.zip'
-    # filename = os.path.join(this_files_dir, 'saved_graphs', filename)
+    filename = json.dumps([latitude, longitude, radius]) + '.zip'
+    filename = os.path.join(this_files_dir, 'saved_graphs', filename)
 
-    filename = 'pweweq'
-    res = os.listdir(os.path.join(this_files_dir,'saved_graphs/'))
+    res = os.listdir(os.path.join(this_files_dir, 'saved_graphs/'))
     for file in res:
         params = file[1:-5]
         variables = params.split(', ')
@@ -32,14 +31,16 @@ def download_graph(latitude: float, longitude: float, radius: float) -> igraph.G
             break
 
     if os.path.exists(filename):
-        graph = igraph.Graph.Read_GraphMLz(filename)
+        graph = igraph.Graph.Read_GraphML(filename)
     else:
         should_download = input('Are you sure you want to download data? (y/n): ')
         assert should_download.lower() == 'y'
         with open(os.path.join(this_files_dir, 'google_maps_api_key.txt'), 'r') as f:
             google_maps_api_key = f.readline()
         graph = _get_graph_not_memoized(latitude, longitude, radius, google_maps_api_key)
-        graph.write_graphmlz(filename)
+        # convert streetname to an integer (for serialization)
+        #for e in graph.es:  e['streetname'] = int(''.join(format(ord(i), 'b') for i in e['streetname']), 2)
+        graph.write_graphml(filename)
     return graph
     
 
@@ -64,10 +65,9 @@ def _get_graph_not_memoized(latitude: float, longitude: float, radius: float,
     graph_ig.add_edges(list(graph.edges()))
     for attr in ('osmid', 'x', 'y'):
         graph_ig.vs[attr] = list(networkx.get_node_attributes(graph, attr).values())
-    for attr in ('length', 'grade', 'name'):
+    for attr in ('length', 'grade'):
         graph_ig.es[attr] = list(networkx.get_edge_attributes(graph, attr).values())
-    graph_ig.es[attr] = list(networkx.get_edge_attributes(graph, attr).values())
-    # return igraph
+    graph_ig.es['streetname'] = [str(s) for s in networkx.get_edge_attributes(graph, 'name').values()]
     return graph_ig
 
 __all__ = ['download_graph']
