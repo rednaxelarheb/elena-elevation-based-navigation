@@ -3,7 +3,7 @@ import numpy as np
 import typing
 import heapq
 from collections import Counter
-from path_finding.path_profile import path_profile
+from path_finding.path_objects import path_object, path_profile
 
 class solver(object):
     ''' A solver object that finds a route for a starting location and desired grade/distance profile.
@@ -141,9 +141,7 @@ class solver(object):
         Args:
             k_solutions: the number of solutions to return
         Returns:
-            A list with `k_solutions` elements, where each element is a dictionary with keys (path, profile), where
-                - `path` is a list of integers that index edges in the graph.
-                - `profile` is a `path_profile` object
+            A list with `k_solutions` elements, where each element is a `path_object` (see path_finding.path_objects.path_object)
         '''
         # we negate the cost so that our heap is a max heap,
         # allowing us to efficiently maintain the k best (lowest cost) solutions
@@ -186,5 +184,6 @@ class solver(object):
                 print("SUCCESFUL PERTURB") # TODO find out why perturbations are unsuccessful
                 add_to_heap(res)
         
-        return [{'path': list(t[2]), 'profile': t[3]} for t in sorted(heap, key=lambda t: -1*t[0])]
+        return [path_object(self.graph, list(t[2]), profile=t[3])
+            for t in sorted(heap, key=lambda t: -1*t[0])]
 
