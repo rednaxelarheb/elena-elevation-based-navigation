@@ -73,10 +73,12 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
 mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
-var semiOpaque = 0.5;
+var semiOpaque = 0.01;
 var opaque = 1;
 var isMapInit = false;
 var routes;
+var routeHasBeenSelected = false;
+var clickMutex = false;
 
 function initMap() {
     let map = new mapboxgl.Map({
@@ -194,6 +196,7 @@ function parseRoutes(routesJson) {
 
 function removeOtherRoutes(num) {
     console.log("removing all others");
+    routeHasBeenSelected = true;
     for (r in routes) {
         if (r != num) {
             id = routes[r]["id"];
@@ -222,8 +225,10 @@ function showServerRoute(lat,lng,dist) {
         success: function (routesData) {
             routes = parseRoutes(routesData);
             for (r in routes) {
-                showRoute(routes[r]["id"], routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
+                showRoute(r, routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
                 addRouteButton(r);
+                // showRoute(routes[0]["id"], routes[0]["long_lat_list"], routes[0]["gradient_path"], semiOpaque);
+                // addRouteButton(0);
             };
         },
     },)
@@ -247,14 +252,15 @@ function setRouteZoom(route) {
 
 
 // Takes:
-//  id           : string
+//  id           : int
 //  latLongList  : a list of float pairs
 //  gradientList : a list of floats from -1.0 to 1.0
 //  opacity      : a float from 0 - 1
 // Does:
 //  Renders a route on the map whose colors match the elevation indicated by the
 //  gradient list at the opacity provided.
-function showRoute(id, latLongList, gradientList, opacity) {
+function showRoute(num, latLongList, gradientList, opacity) {
+    var id = routes[num]['id'];
     var source_id = id + "_source";
     // TODO: set this to the extremes of all routes instead of just one
     setRouteZoom(latLongList);
@@ -299,6 +305,35 @@ function showRoute(id, latLongList, gradientList, opacity) {
         layout: {
             'line-cap': 'round',
             'line-join': 'round',
+        }
+    });
+
+    var hoveredStateId = null;
+
+    map.on("mouseenter", id, function(e) {
+        if (!routeHasBeenSelected) {
+            map.setPaintProperty(id, 'line-opacity', opaque);
+            console.log("mouseenter");
+        }
+    });
+
+    map.on("mouseleave", id, function(e) {
+        if (!routeHasBeenSelected) {
+            map.setPaintProperty(id, 'line-opacity', semiOpaque);
+            console.log("mouseleave");
+        }
+    });
+
+    // Javascript is single threaded, but asynchronous. Can this break?
+    map.on("click", id, function(e) {
+        if(!clickMutex) {
+            clickMutex = true;
+            if (!routeHasBeenSelected) {
+                map.setPaintProperty(id, 'line-opacity', opaque);
+                removeOtherRoutes(num);
+                console.log("click");
+            }
+            clickMutex = false;
         }
     });
 }
@@ -365,9 +400,7 @@ function showAddress(position) {
 function hiliteOnHover(route_num, opacity) {
     id = routes[route_num]["id"];
     var source_id = id + "_source";
-    map.removeLayer(id);
-    map.removeSource(source_id);
-    showRoute(id, routes[route_num]["long_lat_list"], routes[route_num]["gradient_path"], opacity);
+    map.setPaintProperty(id, 'line-opacity', opacity);
 }
 
 var test_grad = [
@@ -442,6 +475,7 @@ var campus_loop_route = [
               <!-- [-72.5266523, 42.3942427], -->
               <!-- [-72.5267224, 42.3942209], -->
               ];
+
 </script>
 
 </body>
