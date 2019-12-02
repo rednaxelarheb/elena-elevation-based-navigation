@@ -69,17 +69,22 @@
 
     <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
 
-    <button onclick="showRoute()">Show Route</button>
+    <!-- <button onclick="showRoute('route2',cur_route,test_grad,semiOpaque)">Show Route</button> -->
     <button onclick="showServerRoute()">Show Server Route</button>
-Address: <input type="text" id="address_input">
-    <button onclick="geocodingWithMapbox()">Click me to get address Lat/Long</button>
+<!-- Address: <input type="text" id="address_input"> -->
+    <!-- <button onclick="geocodingWithMapbox()">Click me to get address Lat/Long</button> -->
+    <!-- <button onclick="hover_to_make_opaque(routes)">hover_to_make_opaque</button> -->
+    <!-- <button onmouseover="hover_to_make_opaque(routes,opaque)" onmouseout="hover_to_make_opaque(routes, semiOpaque)" >hover_to_make_opaque</button> -->
 <p id = "lat_long_here"></p>
+<!-- <button onclick="addRouteButton()"> this one </button> -->
 
 <!--    TODO move this script to external file for loading-->
 <script>
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
 mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
+var semiOpaque = 0.5;
+var opaque = 1;
 
 function initMap() {
     let map = new mapboxgl.Map({
@@ -115,7 +120,6 @@ var noTrackGeolocateController = new mapboxgl.GeolocateControl({
 });
 var map = initMap();
 
-
 function getRoute() {
     //TODO: pass in data, get route form backend and render it
     $.post({
@@ -123,10 +127,116 @@ function getRoute() {
         data: '',
         contentType: 'application/json',
         success: function (data) {
-            console.log(data);
-            showRoute(data);
+            // console.log(data);
+            // showRoute(data["route1"],test_grad);
         },
     },)
+}
+
+
+var routes;
+
+var test_grad = [
+                // 0.0, "yellow",
+                0.1, "yellow",
+                0.2, "lime",
+                0.3, "cyan",
+                0.4, "royalblue",
+                0.5, "blue",
+                0.6, "darkred",
+                0.7, "black",
+                0.8, "lime",
+                0.9, "yellow",
+                0.91, "red"];
+
+function getGradientColor(gradient) {
+    var grades = [-0.21, -0.14, -0.7,      0,     0.7,   0.14,    0.21];
+    var colors = ["blue","red","royalblue","cyan","lime","yellow","black"];
+    
+    // Binary Search for color threshold
+    var min_index = 0;
+    var max_index = grades.length - 1;
+    var index = 0;
+
+    while (true) {
+
+        index = Math.ceil(((max_index - min_index) / 2) + min_index);
+
+        if (min_index == max_index) {
+            return colors[min_index];
+        }
+
+        if (gradient >= grades[index]) {
+            min_index = index;
+        } else {
+            max_index = index - 1;
+        }
+    }
+}
+
+function parseRoutes(routesJson) {
+
+    var routes = [];
+
+    for (var r in routesJson) {
+        routeData = routesJson[r];
+        gradient_list = [];
+        gradient_list_colors = [];
+        long_lat_list = [];
+        gradient_path = [];
+        gradient_step_size = 1 / (routeData.length - 2);
+        gradient_progress = gradient_step_size;
+
+        for (var i = 2; i < routeData.length; i++) {
+            routePoint = routeData[i];
+            gradient_list.push(routePoint["gradient"]);
+            step_color = getGradientColor(routePoint["gradient"]); 
+            gradient_list_colors.push(step_color);
+            gradient_path.push(gradient_progress);
+            gradient_path.push(step_color);
+            gradient_progress += gradient_step_size;
+            var long_lat_item = [routePoint["longitude"], routePoint["latitude"]];
+            long_lat_list.push(long_lat_item);
+        }
+        
+
+        var route = {
+            "id"                    : r,
+            "total_elevation_change": routeData[0]["total_elevation_change"],
+            "distance"              : routeData[1]["distance"],
+            "gradient_list"         : gradient_list,
+            "gradient_path"         : gradient_path,
+            "long_lat_list"         : long_lat_list
+        };
+
+        routes.push(route);
+    } 
+
+    return (routes);
+}
+
+// TODO remove buttons as well
+function removeOtherRoutes(num) {
+    console.log("removing all others");
+    for (r in routes) {
+        if (r != num) {
+            id = routes[r]["id"];
+            // console.log(id);
+            var source_id = id + "_source";
+            // console.log(source_id);
+            map.removeLayer(id);
+            map.removeSource(source_id);
+        }
+    }
+    // Remove dynamic buttons
+    $(".routeButton").remove();
+}
+
+// function addRouteButton(id) {
+function addRouteButton(num) {
+    // var id = "route2";
+    var r= $('<input type="button" class="routeButton" onmouseover="hover_new(\''+num+'\',opaque)" onmouseout="hover_new(\''+num+'\', semiOpaque)" onclick="removeOtherRoutes('+num+')" value="'+routes[num]['id']+'"/>');
+    $("body").append(r);
 }
 
 function showServerRoute() {
@@ -135,12 +245,20 @@ function showServerRoute() {
         url: "get_route",
         data: JSON.stringify({"start_address": {"latitude": 50, "longitude": 50}, "length": 2}),
         contentType: 'application/json',
-        success: function (data) {
-            console.log(data);
-            showRoute(data);
+        success: function (routesData) {
+            // console.log(routesData);
+            routes = parseRoutes(routesData);
+            // console.log(routes);
+            for (r in routes) {
+                // console.log(r);
+                // console.log(routes[r]);
+                showRoute(routes[r]["id"], routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
+                addRouteButton(r);
+            };
         },
     },)
 }
+
 function getCurrentPosition(callback) {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(callback);
@@ -223,20 +341,28 @@ var cur_route = campus_loop_route;
 function setRouteZoom(route) {
     var bounds = route.reduce(function (bounds, coord) {
             return bounds.extend(coord);
-    }, new mapboxgl.LngLatBounds(cur_route[0], cur_route[0]));
+    }, new mapboxgl.LngLatBounds(route[0], route[0]));
 
     map.fitBounds(bounds, {padding: 40});
 }
 
-function showRoute() {
-    setRouteZoom(cur_route);
+
+function showRoute(id, latLong, grad, opacity) {
+    // console.log(id);
+    // console.log(latLong);
+    // console.log(grad);
+    // console.log(opacity);
+    // console.log(id + "_source");
+    var source_id = id + "_source";
+    // TODO: set this to the extremes of all routes instead of just one
+    setRouteZoom(latLong);
     var geojson = {
         "type": "FeatureCollection",
         "features": [{
             "type": "Feature",
             "properties": {},
             "geometry": {
-                "coordinates": cur_route,
+                "coordinates": latLong,
                 "type": "LineString"
             }
         }]
@@ -244,43 +370,33 @@ function showRoute() {
 
     // 'line-gradient' can only be used with GeoJSON sources
     // and the source must have the 'lineMetrics' option set to true
-    map.addSource('line', {
+    map.addSource(source_id, {
             type: 'geojson',
             lineMetrics: true,
             data: geojson
         });
     
     // the layer must be of type 'line'
+    var line_gradient_contents = [
+                'interpolate',
+                ['linear'],
+                ['line-progress']].concat(grad);
+                
     map.addLayer({
         type: 'line',
-        source: 'line',
-        id: 'line',
+        source: source_id,
+        id: id,
         paint: {
             'line-color': 'red',
             'line-width': 14,
             // 'line-gradient' must be specified using an expression
             // with the special 'line-progress' property
-            'line-gradient': [
-                'interpolate',
-                ['linear'],
-                ['line-progress'],
-                0.0, "red",
-                0.1, "yellow",
-                0.2, "lime",
-                0.3, "cyan",
-                0.4, "royalblue",
-                0.5, "blue",
-                0.6, "royalblue",
-                0.7, "cyan",
-                0.8, "lime",
-                0.9, "yellow",
-                1.0, "red"
-            ]
+            'line-gradient': line_gradient_contents,
+            'line-opacity': opacity,
         },
         layout: {
             'line-cap': 'round',
             'line-join': 'round',
-            // 'line-opacity': 0.75,
         }
     });
 }
@@ -300,7 +416,7 @@ function geocodingWithMapquest() {
                 center: [lng, lat],
                 zoom: 14,
             });
-            getRoute();
+            // getRoute();
         }
     })
 }
@@ -338,6 +454,27 @@ function showAddress(position) {
     //     center: [lng, lat],
     //     zoom: 14,
     // })
+}
+
+function hover_to_make_opaque(routes, opacity) {
+    // console.log(test_grad[0]);
+    // console.log(test_grad[1]);
+    // console.log(routes["route1"]);
+    map.removeLayer('line');
+    map.removeSource('line');
+    showRoute(cur_route,test_grad,opacity);
+}
+
+// MAKE THIS WORK TO ADD AND REMOVE WITH DYNAMIC BUTTONS
+function hover_new(num, opacity) {
+    id = routes[num]["id"];
+    // console.log(id);
+    // console.log(opacity);
+    var source_id = id + "_source";
+    // console.log(source_id);
+    map.removeLayer(id);
+    map.removeSource(source_id);
+    showRoute(id, routes[num]["long_lat_list"], routes[num]["gradient_path"], opacity);
 }
 
 </script>
