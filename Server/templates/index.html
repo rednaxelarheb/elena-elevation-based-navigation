@@ -7,12 +7,12 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script crossorigin="anonymous"
+    <!-- <script crossorigin="anonymous"
             integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
             src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script crossorigin="anonymous"
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-            src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> -->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" rel="stylesheet">
 
@@ -65,18 +65,8 @@
         </div>
 
     </div>
-
-
-    <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
-
-    <!-- <button onclick="showRoute('route2',cur_route,test_grad,semiOpaque)">Show Route</button> -->
+    <!-- <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div> -->
     <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
-<!-- Address: <input type="text" id="address_input"> -->
-    <!-- <button onclick="geocodingWithMapbox()">Click me to get address Lat/Long</button> -->
-    <!-- <button onclick="hover_to_make_opaque(routes)">hover_to_make_opaque</button> -->
-    <!-- <button onmouseover="hover_to_make_opaque(routes,opaque)" onmouseout="hover_to_make_opaque(routes, semiOpaque)" >hover_to_make_opaque</button> -->
-<p id = "lat_long_here"></p>
-<!-- <button onclick="addRouteButton()"> this one </button> -->
 
 <!--    TODO move this script to external file for loading-->
 <script>
@@ -85,6 +75,8 @@ mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
 var semiOpaque = 0.5;
 var opaque = 1;
+var isMapInit = false;
+var routes;
 
 function initMap() {
     let map = new mapboxgl.Map({
@@ -111,7 +103,6 @@ function initMap() {
     return map;
 }
 
-var isMapInit = false;
 var noTrackGeolocateController = new mapboxgl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
@@ -120,34 +111,6 @@ var noTrackGeolocateController = new mapboxgl.GeolocateControl({
 });
 var map = initMap();
 
-function getRoute() {
-    //TODO: pass in data, get route form backend and render it
-    $.post({
-        url: "get_route",
-        data: '',
-        contentType: 'application/json',
-        success: function (data) {
-            // console.log(data);
-            // showRoute(data["route1"],test_grad);
-        },
-    },)
-}
-
-
-var routes;
-
-var test_grad = [
-                // 0.0, "yellow",
-                0.1, "yellow",
-                0.2, "lime",
-                0.3, "cyan",
-                0.4, "royalblue",
-                0.5, "blue",
-                0.6, "darkred",
-                0.7, "black",
-                0.8, "lime",
-                0.9, "yellow",
-                0.91, "red"];
 
 function getGradientColor(gradient) {
     var grades = [-0.21, -0.14, -0.7,      0,     0.7,   0.14,    0.21];
@@ -215,7 +178,6 @@ function parseRoutes(routesJson) {
     return (routes);
 }
 
-// TODO remove buttons as well
 function removeOtherRoutes(num) {
     console.log("removing all others");
     for (r in routes) {
@@ -228,7 +190,7 @@ function removeOtherRoutes(num) {
             map.removeSource(source_id);
         }
     }
-    // Remove dynamic buttons
+    // Remove all items of class routeButton
     $(".routeButton").remove();
 }
 
@@ -260,77 +222,6 @@ function getCurrentPosition(callback) {
         console.log("Geolocation is not supported by this browser.");
     }
 }
-
-function showPosition(position) {
-    let lat = position.coords.latitude;
-    let lng = position.coords.longitude;
-    map.flyTo({
-        center: [lng, lat],
-        zoom: 14,
-    })
-}
-
-var lgrc_marston_route = [ 
-              [-72.5267224, 42.3942209],
-              [-72.5266523, 42.3942427],
-              [-72.5265448, 42.3942762],
-              [-72.5263269, 42.3939052],
-              [-72.5269955, 42.3936949],
-              [-72.5273381, 42.3939466],
-              [-72.5277246, 42.3946398],
-              [-72.5281995, 42.3946879],
-              [-72.528568, 42.3945891],
-              [-72.5286749, 42.3945466],
-              [-72.5290824, 42.394426],
-              [-72.5288819, 42.3939421],
-              [-72.5292508, 42.3938264],
-              [-72.5293035, 42.3939254], 
-              ];
-
-var campus_loop_route = [
-              <!-- [-72.5267224, 42.3942209], -->
-              <!-- [-72.5266523, 42.3942427], -->
-              <!-- [-72.5265448, 42.3942762], -->
-              <!-- [-72.5263269, 42.3939052], -->
-              <!-- [-72.5269955, 42.3936949], -->
-              [-72.5271314, 42.3936519],
-              [-72.5279197, 42.3934026],
-              [-72.5280705, 42.3936787],
-              [-72.528568, 42.3945891],
-              [-72.5286749, 42.3945466],
-              [-72.5290824, 42.394426],
-              [-72.5288819, 42.3939421],
-              [-72.5292508, 42.3938264],
-              [-72.5293035, 42.3939254],
-              [-72.5293035, 42.3939254],
-              [-72.5292508, 42.3938264],
-              [-72.5288408, 42.3937322],
-              [-72.5286577, 42.3935782],
-              [-72.5285486, 42.3934142],
-              [-72.5286778, 42.3931534],
-              [-72.5283612, 42.3932528],
-              [-72.5282097, 42.3929871],
-              <!-- [-72.5279098, 42.3924841], -->
-              <!-- [-72.5281986, 42.3921527], -->
-              <!-- [-72.5281986, 42.3921527], -->
-              [-72.5279098, 42.3924841],
-              [-72.527864, 42.3924199],
-              [-72.5275371, 42.3926385],
-              [-72.5271412, 42.3927435],
-              <!-- [-72.5267823, 42.3929566], -->
-              <!-- [-72.527568, 42.3931221], -->
-              <!-- [-72.527568, 42.3931221], -->
-              [-72.5267823, 42.3929566],
-              [-72.5266706, 42.3930229],
-              [-72.5271314, 42.3936519],
-              <!-- [-72.5269955, 42.3936949], -->
-              <!-- [-72.5263269, 42.3939052], -->
-              <!-- [-72.5265448, 42.3942762], -->
-              <!-- [-72.5266523, 42.3942427], -->
-              <!-- [-72.5267224, 42.3942209], -->
-              ];
-
-var cur_route = campus_loop_route;
 
 function setRouteZoom(route) {
     var bounds = route.reduce(function (bounds, coord) {
@@ -456,8 +347,79 @@ function hiliteOnHover(num, opacity) {
     showRoute(id, routes[num]["long_lat_list"], routes[num]["gradient_path"], opacity);
 }
 
-</script>
+var test_grad = [
+                // 0.0, "yellow",
+                0.1, "yellow",
+                0.2, "lime",
+                0.3, "cyan",
+                0.4, "royalblue",
+                0.5, "blue",
+                0.6, "darkred",
+                0.7, "black",
+                0.8, "lime",
+                0.9, "yellow",
+                0.91, "red"];
 
+var lgrc_marston_route = [ 
+              [-72.5267224, 42.3942209],
+              [-72.5266523, 42.3942427],
+              [-72.5265448, 42.3942762],
+              [-72.5263269, 42.3939052],
+              [-72.5269955, 42.3936949],
+              [-72.5273381, 42.3939466],
+              [-72.5277246, 42.3946398],
+              [-72.5281995, 42.3946879],
+              [-72.528568, 42.3945891],
+              [-72.5286749, 42.3945466],
+              [-72.5290824, 42.394426],
+              [-72.5288819, 42.3939421],
+              [-72.5292508, 42.3938264],
+              [-72.5293035, 42.3939254], 
+              ];
+
+var campus_loop_route = [
+              <!-- [-72.5267224, 42.3942209], -->
+              <!-- [-72.5266523, 42.3942427], -->
+              <!-- [-72.5265448, 42.3942762], -->
+              <!-- [-72.5263269, 42.3939052], -->
+              <!-- [-72.5269955, 42.3936949], -->
+              [-72.5271314, 42.3936519],
+              [-72.5279197, 42.3934026],
+              [-72.5280705, 42.3936787],
+              [-72.528568, 42.3945891],
+              [-72.5286749, 42.3945466],
+              [-72.5290824, 42.394426],
+              [-72.5288819, 42.3939421],
+              [-72.5292508, 42.3938264],
+              [-72.5293035, 42.3939254],
+              [-72.5293035, 42.3939254],
+              [-72.5292508, 42.3938264],
+              [-72.5288408, 42.3937322],
+              [-72.5286577, 42.3935782],
+              [-72.5285486, 42.3934142],
+              [-72.5286778, 42.3931534],
+              [-72.5283612, 42.3932528],
+              [-72.5282097, 42.3929871],
+              <!-- [-72.5279098, 42.3924841], -->
+              <!-- [-72.5281986, 42.3921527], -->
+              <!-- [-72.5281986, 42.3921527], -->
+              [-72.5279098, 42.3924841],
+              [-72.527864, 42.3924199],
+              [-72.5275371, 42.3926385],
+              [-72.5271412, 42.3927435],
+              <!-- [-72.5267823, 42.3929566], -->
+              <!-- [-72.527568, 42.3931221], -->
+              <!-- [-72.527568, 42.3931221], -->
+              [-72.5267823, 42.3929566],
+              [-72.5266706, 42.3930229],
+              [-72.5271314, 42.3936519],
+              <!-- [-72.5269955, 42.3936949], -->
+              <!-- [-72.5263269, 42.3939052], -->
+              <!-- [-72.5265448, 42.3942762], -->
+              <!-- [-72.5266523, 42.3942427], -->
+              <!-- [-72.5267224, 42.3942209], -->
+              ];
+</script>
 
 </body>
 </html>
