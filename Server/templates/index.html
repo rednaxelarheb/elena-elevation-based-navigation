@@ -56,11 +56,11 @@
 
             </div>
             <div class="row col-md-12" id='row2'>
-                <label class="col-md-2 col-form-label" for="example-number-input">Distance</label>
+                <label class="col-md-2 col-form-label" for="distance-input">Distance</label>
                 <div class="col-md-8">
-                    <input class="form-control" id="example-number-input" type="number" value="42">
+                    <input class="form-control" id="distance-input" type="number" value="3">
                 </div>
-                <label class="col-md-2 col-form-label" for="example-number-input">miles</label>
+                <label class="col-md-2 col-form-label" for="distance-input">miles</label>
             </div>
         </div>
 
@@ -70,7 +70,7 @@
     <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
 
     <!-- <button onclick="showRoute('route2',cur_route,test_grad,semiOpaque)">Show Route</button> -->
-    <button onclick="showServerRoute()">Show Server Route</button>
+    <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
 <!-- Address: <input type="text" id="address_input"> -->
     <!-- <button onclick="geocodingWithMapbox()">Click me to get address Lat/Long</button> -->
     <!-- <button onclick="hover_to_make_opaque(routes)">hover_to_make_opaque</button> -->
@@ -234,24 +234,18 @@ function removeOtherRoutes(num) {
 
 // function addRouteButton(id) {
 function addRouteButton(num) {
-    // var id = "route2";
-    var r= $('<input type="button" class="routeButton" onmouseover="hover_new(\''+num+'\',opaque)" onmouseout="hover_new(\''+num+'\', semiOpaque)" onclick="removeOtherRoutes('+num+')" value="'+routes[num]['id']+'"/>');
+    var r= $('<input type="button" class="routeButton" onmouseover="hiliteOnHover(\''+num+'\',opaque)" onmouseout="hiliteOnHover(\''+num+'\', semiOpaque)" onclick="removeOtherRoutes('+num+')" value="'+routes[num]['id']+'"/>');
     $("body").append(r);
 }
 
-function showServerRoute() {
-    //TODO: debug
+function showServerRoute(lat,lng,dist) {
     $.post({
         url: "get_route",
-        data: JSON.stringify({"start_address": {"latitude": 50, "longitude": 50}, "length": 2}),
+        data: JSON.stringify({"start_address": {"latitude": lat, "longitude": lng}, "length": dist}),
         contentType: 'application/json',
         success: function (routesData) {
-            // console.log(routesData);
             routes = parseRoutes(routesData);
-            // console.log(routes);
             for (r in routes) {
-                // console.log(r);
-                // console.log(routes[r]);
                 showRoute(routes[r]["id"], routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
                 addRouteButton(r);
             };
@@ -348,11 +342,6 @@ function setRouteZoom(route) {
 
 
 function showRoute(id, latLong, grad, opacity) {
-    // console.log(id);
-    // console.log(latLong);
-    // console.log(grad);
-    // console.log(opacity);
-    // console.log(id + "_source");
     var source_id = id + "_source";
     // TODO: set this to the extremes of all routes instead of just one
     setRouteZoom(latLong);
@@ -405,17 +394,19 @@ function geocodingWithMapquest() {
     const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
         + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
     // console.log(target);
+    var dist = document.getElementById("distance-input").value;
     $.get({
         url: target,
         success: function (data) {
             // console.log(data);
             var lat = data.results[0].locations[0].latLng.lat;
             var lng = data.results[0].locations[0].latLng.lng;
-            // console.log(lat, lng);
+            console.log(lat, lng);
             map.flyTo({
                 center: [lng, lat],
                 zoom: 14,
             });
+            showServerRoute(lat,lng,dist);
             // getRoute();
         }
     })
@@ -456,22 +447,10 @@ function showAddress(position) {
     // })
 }
 
-function hover_to_make_opaque(routes, opacity) {
-    // console.log(test_grad[0]);
-    // console.log(test_grad[1]);
-    // console.log(routes["route1"]);
-    map.removeLayer('line');
-    map.removeSource('line');
-    showRoute(cur_route,test_grad,opacity);
-}
-
-// MAKE THIS WORK TO ADD AND REMOVE WITH DYNAMIC BUTTONS
-function hover_new(num, opacity) {
+// Rerenders the route at the specified opacity.
+function hiliteOnHover(num, opacity) {
     id = routes[num]["id"];
-    // console.log(id);
-    // console.log(opacity);
     var source_id = id + "_source";
-    // console.log(source_id);
     map.removeLayer(id);
     map.removeSource(source_id);
     showRoute(id, routes[num]["long_lat_list"], routes[num]["gradient_path"], opacity);
