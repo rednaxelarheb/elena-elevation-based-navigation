@@ -113,8 +113,16 @@ var map = initMap();
 
 
 function getGradientColor(gradient) {
-    var grades = [-0.21, -0.14, -0.7,      0,     0.7,   0.14,    0.21];
-    var colors = ["blue","red","royalblue","cyan","lime","yellow","black"];
+    var grades = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3];
+    var colors = [
+    "rgb(0,   0,   255)", // blue
+    "rgb(0,   127, 255)", // royal blue
+    "rgb(0,   255, 255)", // cyan
+    "rgb(0,   255, 0)",   // green
+    "rgb(255, 255, 0)",   // yellow
+    "rgb(255, 127, 0)",   // orange
+    "rgb(255, 0,   0)"    // red
+    ];
     
     // Binary Search for color threshold
     var min_index = 0;
@@ -138,30 +146,35 @@ function getGradientColor(gradient) {
 }
 
 function parseRoutes(routesJson) {
+    var parsedRoutes = [];
 
-    var routes = [];
-
+    console.log(routesJson);
     for (var r in routesJson) {
         routeData = routesJson[r];
         gradient_list = [];
         gradient_list_colors = [];
         long_lat_list = [];
         gradient_path = [];
+        // TODO: get actual distance from one node to next, not just even splits
         gradient_step_size = 1 / (routeData.length - 2);
         gradient_progress = gradient_step_size;
 
         for (var i = 2; i < routeData.length; i++) {
             routePoint = routeData[i];
+
             gradient_list.push(routePoint["gradient"]);
+
             step_color = getGradientColor(routePoint["gradient"]); 
             gradient_list_colors.push(step_color);
+
             gradient_path.push(gradient_progress);
             gradient_path.push(step_color);
+
             gradient_progress += gradient_step_size;
+
             var long_lat_item = [routePoint["longitude"], routePoint["latitude"]];
             long_lat_list.push(long_lat_item);
         }
-        
 
         var route = {
             "id"                    : r,
@@ -172,10 +185,11 @@ function parseRoutes(routesJson) {
             "long_lat_list"         : long_lat_list
         };
 
-        routes.push(route);
+        parsedRoutes.push(route);
     } 
 
-    return (routes);
+    console.log(parsedRoutes);
+    return (parsedRoutes);
 }
 
 function removeOtherRoutes(num) {
@@ -194,13 +208,13 @@ function removeOtherRoutes(num) {
     $(".routeButton").remove();
 }
 
-// function addRouteButton(id) {
 function addRouteButton(num) {
     var r= $('<input type="button" class="routeButton" onmouseover="hiliteOnHover(\''+num+'\',opaque)" onmouseout="hiliteOnHover(\''+num+'\', semiOpaque)" onclick="removeOtherRoutes('+num+')" value="'+routes[num]['id']+'"/>');
     $("body").append(r);
 }
 
 function showServerRoute(lat,lng,dist) {
+    $(".routeButton").remove();
     $.post({
         url: "get_route",
         data: JSON.stringify({"start_address": {"latitude": lat, "longitude": lng}, "length": dist}),
@@ -232,17 +246,25 @@ function setRouteZoom(route) {
 }
 
 
-function showRoute(id, latLong, grad, opacity) {
+// Takes:
+//  id           : string
+//  latLongList  : a list of float pairs
+//  gradientList : a list of floats from -1.0 to 1.0
+//  opacity      : a float from 0 - 1
+// Does:
+//  Renders a route on the map whose colors match the elevation indicated by the
+//  gradient list at the opacity provided.
+function showRoute(id, latLongList, gradientList, opacity) {
     var source_id = id + "_source";
     // TODO: set this to the extremes of all routes instead of just one
-    setRouteZoom(latLong);
+    setRouteZoom(latLongList);
     var geojson = {
         "type": "FeatureCollection",
         "features": [{
             "type": "Feature",
             "properties": {},
             "geometry": {
-                "coordinates": latLong,
+                "coordinates": latLongList,
                 "type": "LineString"
             }
         }]
@@ -260,7 +282,7 @@ function showRoute(id, latLong, grad, opacity) {
     var line_gradient_contents = [
                 'interpolate',
                 ['linear'],
-                ['line-progress']].concat(grad);
+                ['line-progress']].concat(gradientList);
                 
     map.addLayer({
         type: 'line',
@@ -303,6 +325,7 @@ function geocodingWithMapquest() {
     })
 }
 
+// Do we need this?
 function geocodingWithMapbox() {
     var input = document.getElementById("address_input").value;
     var address = input.split(" ").join("%20");
@@ -339,12 +362,12 @@ function showAddress(position) {
 }
 
 // Rerenders the route at the specified opacity.
-function hiliteOnHover(num, opacity) {
-    id = routes[num]["id"];
+function hiliteOnHover(route_num, opacity) {
+    id = routes[route_num]["id"];
     var source_id = id + "_source";
     map.removeLayer(id);
     map.removeSource(source_id);
-    showRoute(id, routes[num]["long_lat_list"], routes[num]["gradient_path"], opacity);
+    showRoute(id, routes[route_num]["long_lat_list"], routes[route_num]["gradient_path"], opacity);
 }
 
 var test_grad = [
