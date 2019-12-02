@@ -6,6 +6,7 @@ import jsonschema
 
 from path_finding import download_graph
 from path_finding import solver
+from path_finding import *
 
 # load flask server config from json and update setting
 settings_path = './appconfig.json'
@@ -50,8 +51,9 @@ def get_route():
 
         # TODO process input data and compute best route and return it for rendering
 
-        graph = download_graph.download_graph(latitude, longitude, radius)
-        res = solver.solver(graph, latitude, longitude, unknown_parameter, radius*2).solve()
+        graph = download_graph(latitude, longitude, radius)
+        desired_profile = path_profile().from_total_uphill_and_dist(100, radius*2) #need to get elevation change (in place of 100) from front end
+        res = solver(graph, latitude, longitude, desired_profile).solve()
         print(res)
         routes = {}
         count = 0;

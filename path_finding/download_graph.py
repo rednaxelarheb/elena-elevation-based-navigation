@@ -7,6 +7,7 @@ import json
 this_files_dir = os.path.dirname(os.path.realpath(__file__))
 
 def download_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
+    print("we got called")
     '''Constructs a graph from street networks within a specified location.
     
     Args:
