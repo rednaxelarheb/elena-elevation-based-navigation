@@ -44,6 +44,11 @@
         padding-left: 10px;
     }
 
+    .ScrollStyle {
+        max-height: 500px;
+        overflow-y: scroll;
+    }
+
 </style>
 </head>
 <body>
@@ -96,12 +101,122 @@
         id='start-address'
         placeholder="Where to start?" style='width:200px'
         type="text">
+    <!-- <input class="form-control" id="distance-input" type="number" value="3"> -->
+    <input class="form-control"
+        id='distance-input'
+        placeholder="How far (miles)?" 
+        style='width:200px'
+        type="number">
     <button class="btn btn-outline-secondary" id="button-locate"
             onclick="getCurrentPosition(showAddress)" type="button">📍
     <button class="btn btn-outline-secondary" id="button-go"
             onclick="geocodingWithMapquest()" type="button">Go! </button>
     <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
-    <div id="routeInfo"></div>
+    <div id="routeDetails"></div>
+    <div id="turnByTurn" class="ScrollStyle">
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+    </div>
 </div>
 
 <script>
@@ -113,7 +228,7 @@ var opaque = 1;
 var isMapInit = false;
 var routes;
 var routeHasBeenSelected = false;
-var clickMutex = false;
+var hoverId = null;
 
 function initMap() {
     let map = new mapboxgl.Map({
@@ -343,32 +458,36 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
         }
     });
 
-    var hoveredStateId = null;
-
     map.on("mouseenter", id, function(e) {
-        if (!routeHasBeenSelected) {
-            map.setPaintProperty(id, 'line-opacity', opaque);
-            console.log("mouseenter");
+        if(hoverId == null) {
+            hoverId = id;
+            if (!routeHasBeenSelected) {
+                map.setPaintProperty(id, 'line-opacity', opaque);
+                console.log("mouseenter");
+            }
+            showRouteDetails(routesIndex);
         }
     });
 
     map.on("mouseleave", id, function(e) {
-        if (!routeHasBeenSelected) {
-            map.setPaintProperty(id, 'line-opacity', semiOpaque);
-            console.log("mouseleave");
+        if(hoverId == id) {
+            if (!routeHasBeenSelected) {
+                map.setPaintProperty(id, 'line-opacity', semiOpaque);
+                console.log("mouseleave");
+            }
+            hideRouteDetails();
+            hoverId = null;
         }
     });
 
     // Javascript is single threaded, but asynchronous. Can this break?
     map.on("click", id, function(e) {
-        if(!clickMutex) {
-            clickMutex = true;
+        if(hoverId == id) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', opaque);
                 removeOtherRoutes(routesIndex);
                 console.log("click");
             }
-            clickMutex = false;
         }
     });
 }
@@ -436,6 +555,14 @@ function hiliteOnHover(route_num, opacity) {
     id = routes[route_num]["id"];
     var source_id = id + "_source";
     map.setPaintProperty(id, 'line-opacity', opacity);
+}
+
+// TODO: return distance in format they provided
+function showRouteDetails(routesIndex) {
+    document.getElementById('routeDetails').innerHTML = "Distance: " + routes[routesIndex]['distance'] + "<br>Elevation Change: " + routes[routesIndex]['total_elevation_change'];
+}
+function hideRouteDetails() {
+    document.getElementById('routeDetails').innerHTML = "";
 }
 
 var test_grad = [
