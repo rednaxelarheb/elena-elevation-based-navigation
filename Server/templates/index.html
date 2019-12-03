@@ -17,24 +17,44 @@
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" rel="stylesheet">
 
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet'/>
-    <link href="{{ url_for('static', filename='styles/elena.css') }}" rel="stylesheet" type="text/css">
+    <!-- <link href="{{ url_for('static', filename='styles/elena.css') }}" rel="stylesheet" type="text/css"> -->
     <!--our stylesheet rules-->
 <style>
-
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+    
+    #sidebar {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        bottom: 15px;
+        width: 250px;
+        overflow: auto;
+        background: rgba(255, 255, 255, 0.8);
+        font-family: "Arial";
+        padding-left: 10px;
+    }
 
 </style>
 </head>
 <body>
-    <h1> Elevate </h1>
+    <!-- <h1> Elevate </h1>
 
     <div class="d-md-flex h-md-100 align-items-center">
 
-        <!-- First Half -->
 
         <div class="col-md-8 p-0 bg-indigo h-md-100" id="map">
         </div>
 
-        <!-- Second Half -->
 
         <div class="col-md-4 p-0 bg-white h-md-100 ">
             <div class="row col-md-12" id='row1'>
@@ -64,11 +84,26 @@
             </div>
         </div>
 
-    </div>
+    </div> -->
     <!-- <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div> -->
-    <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
+    <!-- <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button> -->
 
 <!--    TODO move this script to external file for loading-->
+<div id='map'></div>
+<div id='sidebar'>
+    <h1>Elevate</h1>
+    <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
+        id='start-address'
+        placeholder="Where to start?" style='width:200px'
+        type="text">
+    <button class="btn btn-outline-secondary" id="button-locate"
+            onclick="getCurrentPosition(showAddress)" type="button">📍
+    <button class="btn btn-outline-secondary" id="button-go"
+            onclick="geocodingWithMapquest()" type="button">Go! </button>
+    <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
+    <div id="routeInfo"></div>
+</div>
+
 <script>
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
 mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
@@ -84,20 +119,21 @@ function initMap() {
     let map = new mapboxgl.Map({
         container: 'map', // container id
         style: 'mapbox://styles/mapbox/streets-v11', // stylesheet or maybe: 'mapbox://styles/mapbox/light-v9' ?
+        // style: 'mapbox://styles/mapbox/light-v8',
         center: [-72.526711, 42.391155], // starting position [lng, lat]
-        zoom: 14 // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
+        zoom: 14, // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
     });
 
     map.addControl(noTrackGeolocateController);
 
     let nav = new mapboxgl.NavigationControl();
-    map.addControl(nav, 'top-left');
+    map.addControl(nav, 'top-right');
 
     let scale = new mapboxgl.ScaleControl({
-        maxWidth: 80,
+        // maxWidth: 80,
         unit: 'imperial'
     });
-    map.addControl(scale);
+    map.addControl(scale, 'bottom-right');
 
     scale.setUnit('metric');
 
@@ -112,7 +148,6 @@ var noTrackGeolocateController = new mapboxgl.GeolocateControl({
     trackUserLocation: false
 });
 var map = initMap();
-
 
 function getGradientColor(gradient) {
     var grades = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3];
@@ -252,15 +287,15 @@ function setRouteZoom(route) {
 
 
 // Takes:
-//  id           : int
+//  routesIndex  : int
 //  latLongList  : a list of float pairs
 //  gradientList : a list of floats from -1.0 to 1.0
 //  opacity      : a float from 0 - 1
 // Does:
 //  Renders a route on the map whose colors match the elevation indicated by the
 //  gradient list at the opacity provided.
-function showRoute(num, latLongList, gradientList, opacity) {
-    var id = routes[num]['id'];
+function showRoute(routesIndex, latLongList, gradientList, opacity) {
+    var id = routes[routesIndex]['id'];
     var source_id = id + "_source";
     // TODO: set this to the extremes of all routes instead of just one
     setRouteZoom(latLongList);
@@ -330,7 +365,7 @@ function showRoute(num, latLongList, gradientList, opacity) {
             clickMutex = true;
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', opaque);
-                removeOtherRoutes(num);
+                removeOtherRoutes(routesIndex);
                 console.log("click");
             }
             clickMutex = false;
