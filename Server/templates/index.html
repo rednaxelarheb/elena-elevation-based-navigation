@@ -114,7 +114,7 @@
     <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
     <div id="routeDetails"></div>
     <div id="turnByTurn" class="ScrollStyle">
-        So Many Directions!<br/>
+        So Many Directions! This one's too wide! Oh no!<br/>
         So Many Directions!<br/>
         So Many Directions!<br/>
         So Many Directions!<br/>
@@ -474,8 +474,8 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', semiOpaque);
                 console.log("mouseleave");
+                hideRouteDetails();
             }
-            hideRouteDetails();
             hoverId = null;
         }
     });
