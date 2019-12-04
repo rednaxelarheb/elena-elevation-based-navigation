@@ -8,18 +8,10 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <!-- <script crossorigin="anonymous"
-            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script crossorigin="anonymous"
-            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-            src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> -->
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" rel="stylesheet">
 
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet'/>
-    <!-- <link href="{{ url_for('static', filename='styles/elena.css') }}" rel="stylesheet" type="text/css"> -->
-    <!--our stylesheet rules-->
 <style>
     body {
         margin: 0;
@@ -42,7 +34,6 @@
         width: 250px;
         overflow: auto;
         background: rgba(255, 255, 255, 0.8);
-        font-family: "Abel";
         padding-left: 10px;
     }
 
@@ -54,171 +45,28 @@
 </style>
 </head>
 <body>
-    <!-- <h1> Elevate </h1>
-
-    <div class="d-md-flex h-md-100 align-items-center">
-
-
-        <div class="col-md-8 p-0 bg-indigo h-md-100" id="map">
-        </div>
-
-
-        <div class="col-md-4 p-0 bg-white h-md-100 ">
-            <div class="row col-md-12" id='row1'>
-                <div class="col-md-12" id='control_box'>
-                    <div class="input-group col-md-12">
-                        <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
-                               id='start-address'
-                               placeholder="Where to start?" style='width:200px'
-                               type="text">
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" id="button-locate"
-                                    onclick="getCurrentPosition(showAddress)" type="button">📍
-                                <button class="btn btn-outline-secondary" id="button-go"
-                                        onclick="geocodingWithMapquest()" type="button">Go!
-                                </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div class="row col-md-12" id='row2'>
-                <label class="col-md-2 col-form-label" for="distance-input">Distance</label>
-                <div class="col-md-8">
-                    <input class="form-control" id="distance-input" type="number" value="3">
-                </div>
-                <label class="col-md-2 col-form-label" for="distance-input">miles</label>
-            </div>
-        </div>
-
-    </div> -->
-    <!-- <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div> -->
-    <!-- <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button> -->
-
-<!--    TODO move this script to external file for loading-->
 <div id='map'></div>
 <div id='sidebar'>
     <h1>Elevate</h1>
-    <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
-        id='start-address'
-        placeholder="Where to start?" style='width:200px'
-        type="text">
-    <!-- <input class="form-control" id="distance-input" type="number" value="3"> -->
-    <input class="form-control"
-        id='distance-input'
-        placeholder="How far (miles)?" 
-        style='width:200px'
-        type="number">
-    <button class="btn btn-outline-secondary" id="button-locate"
-            onclick="getCurrentPosition(showAddress)" type="button">📍
-    <button class="btn btn-outline-secondary" id="button-go"
-            onclick="geocodingWithMapquest()" type="button">Go! </button>
-    <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
-    <div id="routeDetails"></div>
-    <div id="turnByTurn" class="ScrollStyle">
-        So Many Directions! This one's too wide! Oh no!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
-        So Many Directions!<br/>
+    <div id='inputs' class="inputs">
+        <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control" class="inputs"
+            id='start-address'
+            placeholder="Where to start?" style='width:200px'
+            type="text">
+        <!-- <input class="form-control" id="distance-input" type="number" value="3"> -->
+        <input class="form-control"
+            id='distance-input'
+            placeholder="How far (miles)?" 
+            style='width:200px'
+            type="number">
+        <button class="btn btn-outline-secondary" class="inputs" id="button-locate"
+                onclick="getCurrentPosition(showAddress)" type="button">📍
+        <button class="btn btn-outline-secondary" id="button-go" class="inputs"
+                onclick="geocodingWithMapquest()" type="button">Go! </button>
+        <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
     </div>
+    <div id="routeDetails"></div>
+    <div id="turnByTurn" class="ScrollStyle"> </div>
 </div>
 
 <script>
@@ -346,7 +194,7 @@ function parseRoutes(routesJson) {
     return (parsedRoutes);
 }
 
-function removeOtherRoutes(num) {
+function removeRoutesAndInputs(num) {
     console.log("removing all others");
     routeHasBeenSelected = true;
     for (r in routes) {
@@ -360,7 +208,8 @@ function removeOtherRoutes(num) {
         }
     }
     // Remove all items of class routeButton
-    $(".routeButton").remove();
+    // $(".routeButton").remove();
+    $(".inputs").attr("hidden");
 }
 
 function addRouteButton(num) {
@@ -368,7 +217,54 @@ function addRouteButton(num) {
     $("body").append(r);
 }
 
+function addStartPin(lat,lng) {
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    // feature for Mapbox DC
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-77.03238901390978, 38.913188059745586]
+                    },
+                    "properties": {
+                        "title": "Mapbox DC",
+                        "icon": "monument"
+                    }
+                }, {
+                    // feature for Mapbox SF
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-122.414, 37.776]
+                    },
+                    "properties": {
+                        "title": "Mapbox SF",
+                        "icon": "harbor"
+                    }
+                }]
+            }
+        },
+        "layout": {
+            // get the icon name from the source's "icon" property
+            // concatenate the name to get an icon from the style's sprite sheet
+            "icon-image": ["concat", ["get", "icon"], "-15"],
+            // get the title name from the source's "title" property
+            "text-field": ["get", "title"],
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
+        }
+    });
+}
+
 function showServerRoute(lat,lng,dist) {
+    addStartPin(lat,lng);
     $(".routeButton").remove();
     $.post({
         url: "get_route",
@@ -378,7 +274,7 @@ function showServerRoute(lat,lng,dist) {
             routes = parseRoutes(routesData);
             for (r in routes) {
                 showRoute(r, routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
-                addRouteButton(r);
+                // addRouteButton(r);
                 // showRoute(routes[0]["id"], routes[0]["long_lat_list"], routes[0]["gradient_path"], semiOpaque);
                 // addRouteButton(0);
             };
@@ -487,7 +383,7 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
         if(hoverId == id) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', opaque);
-                removeOtherRoutes(routesIndex);
+                removeRoutesAndInputs(routesIndex);
                 console.log("click");
             }
         }
