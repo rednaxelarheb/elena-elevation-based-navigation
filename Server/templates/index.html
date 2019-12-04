@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <link href='https://fonts.googleapis.com/css?family=Abel' rel='stylesheet'>
 <meta charset='utf-8' />
@@ -16,7 +16,7 @@
     body {
         margin: 0;
         padding: 0;
-        font-family: 'Abel';
+        font-family: 'Abel',sans-serif;
     }
     
     #map {
@@ -34,6 +34,10 @@
         width: 250px;
         overflow: auto;
         background: rgba(255, 255, 255, 0.8);
+<<<<<<< HEAD
+=======
+        font-family: "Abel",sans-serif;
+>>>>>>> 16e443896606c83e041f06da7e8c1bb391ac6024
         padding-left: 10px;
     }
 
@@ -48,6 +52,7 @@
 <div id='map'></div>
 <div id='sidebar'>
     <h1>Elevate</h1>
+<<<<<<< HEAD
     <div id='inputs' class="inputs">
         <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control" class="inputs"
             id='start-address'
@@ -64,6 +69,127 @@
         <button class="btn btn-outline-secondary" id="button-go" class="inputs"
                 onclick="geocodingWithMapquest()" type="button">Go! </button>
         <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
+=======
+    <input aria-label="Where to start?" class="form-control"
+        id='start-address'
+        placeholder="Where to start?" style='width:200px'
+        type="text">
+    <!-- <input class="form-control" id="distance-input" type="number" value="3"> -->
+    <input aria-label="How far (miles)?" class="form-control"
+        id='distance-input'
+        placeholder="How far (miles)?" 
+        style='width:200px'
+        type="number">
+    <button class="btn btn-outline-secondary" id="button-locate"
+            onclick="getCurrentPosition(showAddress)" type="button">📍
+    <button class="btn btn-outline-secondary" id="button-go"
+            onclick="geocodingWithMapquest()" type="button">Go! </button>
+    <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
+    <div id="routeDetails"></div>
+    <div id="turnByTurn" class="ScrollStyle">
+        So Many Directions! This one's too wide! Oh no!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+        So Many Directions!<br/>
+>>>>>>> 16e443896606c83e041f06da7e8c1bb391ac6024
     </div>
     <div id="routeDetails"></div>
     <div id="turnByTurn" class="ScrollStyle"> </div>
@@ -135,7 +261,7 @@ function getGradientColor(gradient) {
 
         index = Math.ceil(((max_index - min_index) / 2) + min_index);
 
-        if (min_index == max_index) {
+        if (min_index === max_index) {
             return colors[min_index];
         }
 
@@ -198,7 +324,7 @@ function removeRoutesAndInputs(num) {
     console.log("removing all others");
     routeHasBeenSelected = true;
     for (r in routes) {
-        if (r != num) {
+        if (r !== num) {
             id = routes[r]["id"];
             // console.log(id);
             var source_id = id + "_source";
@@ -435,7 +561,8 @@ function showAddress(position) {
         mapboxgl.accessToken;
     $.get( apiAddress,
         function (data, status) {
-            var address = data.features[0].place_name;
+            console.log(data);
+            var address = data.features[0].properties.address + ", " + data.features[1].place_name;
             console.log(address);
             $('#start-address').val(address);
         }, 'json');
