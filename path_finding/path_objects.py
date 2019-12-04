@@ -12,6 +12,13 @@ class path_profile(object):
         self.distances = [0]
         self.total_uphill = 0
         self.total_distance = 0
+    
+    def get_slopes(self) -> typing.List[float]:
+        ''' Returns the slopes of each edge in the path. '''
+        slopes = []
+        for i in range(1, len(self.altitudes)):
+            slopes.append((self.altitudes[i] - self.altitudes[i-1]) / self.distances[i])
+        return slopes
 
     def from_path(self, graph: igraph.Graph, path: typing.List[int]):
         self.altitudes = [0]
@@ -63,10 +70,11 @@ class path_object(object):
         return vids
     
     def get_vertex_locations(self) -> typing.List[typing.Dict[str, float]]:
+        ''' Returns a list of (latitude, longitude) pairs, as a dict '''
         locs = []
         for vid in self.get_edge_ids():
             v = self.graph.vs[vid]
-            locs.append({'x': v['x'], 'y': v['y']})
+            locs.append({'latitude': v['y'], 'longitude': v['x']})
         return locs
     
     def get_text_directions(self) -> str:
