@@ -74,6 +74,7 @@ def get_route():
             path.append({'total_elevation_change': route.get_profile().total_uphill})
             path.append({'distance': route.get_profile().total_distance})
             path.append(locations)
+            path.append({"text_directions": route.get_text_directions()})
 
             count+=1
             route_name = "route%d" % count
