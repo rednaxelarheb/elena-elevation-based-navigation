@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <link href='https://fonts.googleapis.com/css?family=Abel' rel='stylesheet'>
 <meta charset='utf-8' />
@@ -24,7 +24,7 @@
     body {
         margin: 0;
         padding: 0;
-        font-family: 'Abel';
+        font-family: 'Abel',sans-serif;
     }
     
     #map {
@@ -42,7 +42,7 @@
         width: 250px;
         overflow: auto;
         background: rgba(255, 255, 255, 0.8);
-        font-family: "Abel";
+        font-family: "Abel",sans-serif;
         padding-left: 10px;
     }
 
@@ -99,12 +99,12 @@
 <div id='map'></div>
 <div id='sidebar'>
     <h1>Elevate</h1>
-    <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
+    <input aria-label="Where to start?" class="form-control"
         id='start-address'
         placeholder="Where to start?" style='width:200px'
         type="text">
     <!-- <input class="form-control" id="distance-input" type="number" value="3"> -->
-    <input class="form-control"
+    <input aria-label="How far (miles)?" class="form-control"
         id='distance-input'
         placeholder="How far (miles)?" 
         style='width:200px'
@@ -287,7 +287,7 @@ function getGradientColor(gradient) {
 
         index = Math.ceil(((max_index - min_index) / 2) + min_index);
 
-        if (min_index == max_index) {
+        if (min_index === max_index) {
             return colors[min_index];
         }
 
@@ -350,7 +350,7 @@ function removeOtherRoutes(num) {
     console.log("removing all others");
     routeHasBeenSelected = true;
     for (r in routes) {
-        if (r != num) {
+        if (r !== num) {
             id = routes[r]["id"];
             // console.log(id);
             var source_id = id + "_source";
@@ -539,7 +539,8 @@ function showAddress(position) {
         mapboxgl.accessToken;
     $.get( apiAddress,
         function (data, status) {
-            var address = data.features[0].place_name;
+            console.log(data);
+            var address = data.features[0].properties.address + ", " + data.features[1].place_name;
             console.log(address);
             $('#start-address').val(address);
         }, 'json');
