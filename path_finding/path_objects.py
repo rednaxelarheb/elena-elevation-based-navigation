@@ -72,7 +72,7 @@ class path_object(object):
     def get_vertex_locations(self) -> typing.List[typing.Dict[str, float]]:
         ''' Returns a list of (latitude, longitude) pairs, as a dict '''
         locs = []
-        for vid in self.get_edge_ids():
+        for vid in self.get_vertex_ids():
             v = self.graph.vs[vid]
             locs.append({'latitude': v['y'], 'longitude': v['x']})
         return locs
