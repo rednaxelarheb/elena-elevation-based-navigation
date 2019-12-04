@@ -7,7 +7,6 @@ import json
 this_files_dir = os.path.dirname(os.path.realpath(__file__))
 
 def download_graph(latitude: float, longitude: float, radius: float) -> igraph.Graph:
-    print("we got called")
     '''Constructs a graph from street networks within a specified location.
     
     Args:
@@ -39,8 +38,6 @@ def download_graph(latitude: float, longitude: float, radius: float) -> igraph.G
         with open(os.path.join(this_files_dir, 'google_maps_api_key.txt'), 'r') as f:
             google_maps_api_key = f.readline()
         graph = _get_graph_not_memoized(latitude, longitude, radius, google_maps_api_key)
-        # convert streetname to an integer (for serialization)
-        #for e in graph.es:  e['streetname'] = int(''.join(format(ord(i), 'b') for i in e['streetname']), 2)
         graph.write_graphml(filename)
     return graph
     
@@ -55,7 +52,7 @@ def _get_graph_not_memoized(latitude: float, longitude: float, radius: float,
     east_long = longitude + radius_latlong
     west_long = longitude - radius_latlong
     # download graph
-    graph = osmnx.graph_from_bbox(37.79, 37.78, -122.41, -122.43, network_type='walk')
+    graph = osmnx.graph_from_bbox(north_lat, south_lat, east_long, west_long, network_type='walk')
     graph = osmnx.add_node_elevations(graph, api_key=google_maps_api_key)
     graph = osmnx.add_edge_grades(graph) 
     # convert node labels
