@@ -58,19 +58,28 @@ def get_route():
         for route in res:
             ######
             path = []
-            print()
             locations = route.get_vertex_locations()
             slopes = route.get_profile().get_slopes()
             distances = route.get_profile().distances
 
-            slopes.append(0.0)
 
 
             ind = 0
+            cur_total = 0
             for x in locations:
-                x['gradient'] = slopes[ind]
-                x['distance_to_next'] = distances[ind]
-                ind +=1
+                if ind < len(distances) -1:
+                    x['gradient'] = slopes[ind]
+                    x['distance_to_next'] = distances[ind]
+                    cur_total +=slopes[ind]*distances[ind]
+                    ind +=1
+                else:
+                    print(x)
+                    inverse = -1*cur_total/distances[ind] #aproximantion of what that last slope needs to be
+                    x['gradient'] = inverse
+                    x['distance_to_next'] = distances[ind]
+                    ind += 1
+
+
             path.append({'total_elevation_change': route.get_profile().total_uphill})
             path.append({'distance': route.get_profile().total_distance})
             path.append(locations)
@@ -99,13 +108,6 @@ def validate_json_in(input_data):
         except:
             return False
 
-
-def dict_zip(*args):
-    out = {i: [] for i in args[0]}
-    for dic in args:
-        for key in out:
-            out[key].append(dic[key])
-    return out
 
 if __name__ == '__main__':
     app.run()
