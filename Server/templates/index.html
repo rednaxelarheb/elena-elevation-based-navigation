@@ -1,104 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<link href='https://fonts.googleapis.com/css?family=Abel' rel='stylesheet'>
 <meta charset='utf-8' />
 <title>EleNa Elevation Mapping </title>
 
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script crossorigin="anonymous"
-            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script crossorigin="anonymous"
-            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-            src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" rel="stylesheet">
 
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet'/>
-    <link href="{{ url_for('static', filename='styles/elena.css') }}" rel="stylesheet" type="text/css">
-    <!--our stylesheet rules-->
 <style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Abel',sans-serif;
+    }
+    
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+    
+    #sidebar {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        bottom: 15px;
+        width: 250px;
+        overflow: auto;
+        background: rgba(255, 255, 255, 0.8);
+        font-family: "Abel",sans-serif;
+        padding-left: 10px;
+    }
 
+    .ScrollStyle {
+        max-height: 500px;
+        overflow-y: scroll;
+    }
 
 </style>
 </head>
 <body>
-    <h1> Elevate </h1>
+<div id='map'></div>
+<div id='sidebar'>
+    <h1>Elevate</h1>
+    <input aria-label="Where to start?" class="form-control"
+        id='start-address'
+        placeholder="Where to start?" style='width:200px'
+        type="text">
+    <!-- <input class="form-control" id="distance-input" type="number" value="3"> -->
+    <input aria-label="How far (miles)?" class="form-control"
+        id='distance-input'
+        placeholder="How far (miles)?" 
+        style='width:200px'
+        type="number">
+    <button class="btn btn-outline-secondary" id="button-locate"
+            onclick="getCurrentPosition(showAddress)" type="button">📍
+    <button class="btn btn-outline-secondary" id="button-go"
+            onclick="geocodingWithMapquest()" type="button">Go! </button>
+    <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
+    <div id="routeDetails"></div>
+    <div id="turnByTurn" class="ScrollStyle"></div>
+</div>
 
-    <div class="d-md-flex h-md-100 align-items-center">
-
-        <!-- First Half -->
-
-        <div class="col-md-8 p-0 bg-indigo h-md-100" id="map">
-        </div>
-
-        <!-- Second Half -->
-
-        <div class="col-md-4 p-0 bg-white h-md-100 ">
-            <div class="row col-md-12" id='row1'>
-                <div class="col-md-12" id='control_box'>
-                    <div class="input-group col-md-12">
-                        <input aria-describedby="button-addon2" aria-label="Where to start?" class="form-control"
-                               id='start-address'
-                               placeholder="Where to start?" style='width:200px'
-                               type="text">
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" id="button-locate"
-                                    onclick="getCurrentPosition(showAddress)" type="button">📍
-                                <button class="btn btn-outline-secondary" id="button-go"
-                                        onclick="geocodingWithMapquest()" type="button">Go!
-                                </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div class="row col-md-12" id='row2'>
-                <label class="col-md-2 col-form-label" for="example-number-input">Distance</label>
-                <div class="col-md-8">
-                    <input class="form-control" id="example-number-input" type="number" value="42">
-                </div>
-                <label class="col-md-2 col-form-label" for="example-number-input">miles</label>
-            </div>
-        </div>
-
-    </div>
-
-
-    <div id='text_instruction'>Text instructions like: TURN LEFT, <br> take the second right...</div>
-
-    <button onclick="showRoute()">Show Route</button>
-    <button onclick="showServerRoute()">Show Server Route</button>
-Address: <input type="text" id="address_input">
-    <button onclick="geocodingWithMapbox()">Click me to get address Lat/Long</button>
-<p id = "lat_long_here"></p>
-
-<!--    TODO move this script to external file for loading-->
 <script>
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
 mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
+var semiOpaque = 0.01;
+var opaque = 1;
+var isMapInit = false;
+var routes;
+var routeHasBeenSelected = false;
+var hoverId = null;
 
 function initMap() {
     let map = new mapboxgl.Map({
         container: 'map', // container id
-        style: 'mapbox://styles/mapbox/streets-v11', // stylesheet or maybe: 'mapbox://styles/mapbox/light-v9' ?
+        style: 'mapbox://styles/mapbox/outdoors-v11', // stylesheet or maybe: 'mapbox://styles/mapbox/light-v9' ?
+        // style: 'mapbox://styles/mapbox/light-v8',
         center: [-72.526711, 42.391155], // starting position [lng, lat]
-        zoom: 14 // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
+        zoom: 14, // starting zoom https://www.latlong.net/place/the-university-of-massachusetts-amherst-ma-usa-24006.html
     });
 
     map.addControl(noTrackGeolocateController);
 
     let nav = new mapboxgl.NavigationControl();
-    map.addControl(nav, 'top-left');
+    map.addControl(nav, 'top-right');
 
     let scale = new mapboxgl.ScaleControl({
-        maxWidth: 80,
+        // maxWidth: 80,
         unit: 'imperial'
     });
-    map.addControl(scale);
+    map.addControl(scale, 'bottom-right');
 
     scale.setUnit('metric');
 
@@ -106,7 +105,6 @@ function initMap() {
     return map;
 }
 
-var isMapInit = false;
 var noTrackGeolocateController = new mapboxgl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
@@ -115,32 +113,176 @@ var noTrackGeolocateController = new mapboxgl.GeolocateControl({
 });
 var map = initMap();
 
+function getGradientColor(gradient) {
+    var grades = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3];
+    var colors = [
+        "rgb(0,   0,   255)", // blue
+        "rgb(0,   127, 255)", // royal blue
+        "rgb(0,   255, 255)", // cyan
+        "rgb(0,   255, 0)",   // green
+        "rgb(255, 255, 0)",   // yellow
+        "rgb(255, 127, 0)",   // orange
+        "rgb(255, 0,   0)"    // red
+    ];
+    
+    // Binary Search for color threshold
+    var min_index = 0;
+    var max_index = grades.length - 1;
+    var index = 0;
 
-function getRoute() {
-    //TODO: pass in data, get route form backend and render it
+    while (true) {
+
+        index = Math.ceil(((max_index - min_index) / 2) + min_index);
+
+        if (min_index === max_index) {
+            return colors[min_index];
+        }
+
+        if (gradient >= grades[index]) {
+            min_index = index;
+        } else {
+            max_index = index - 1;
+        }
+    }
+}
+
+function parseRoutes(routesJson) {
+    var parsedRoutes = [];
+
+    console.log('routesJson');
+    console.log(routesJson);
+    for (var r in routesJson) {
+        routeData = routesJson[r];
+        gradient_list = [];
+        gradient_list_colors = [];
+        long_lat_list = [];
+        gradient_path = [];
+        // TODO: get actual distance from one node to next, not just even splits
+        gradient_step_size = 1 / (routeData.length - 2);
+        gradient_progress = gradient_step_size;
+        distance = routeData[1]["distance"];
+
+        for (var i = 0; i < routeData[2].length; i++) {
+            routePoint = routeData[2][i];
+            // console.log(routePoint);
+
+            gradient_list.push(routePoint["gradient"]);
+
+            step_color = getGradientColor(routePoint["gradient"]); 
+            gradient_list_colors.push(step_color);
+
+            gradient_path.push(routePoint["distance_to_next"] / distance);
+            gradient_path.push(step_color);
+
+            var long_lat_item = [routePoint["longitude"], routePoint["latitude"]];
+            long_lat_list.push(long_lat_item);
+        }
+
+        var route = {
+            "id"                    : r,
+            "total_elevation_change": routeData[0]["total_elevation_change"],
+            "distance"              : distance,
+            "gradient_list"         : gradient_list,
+            "gradient_path"         : gradient_path,
+            "long_lat_list"         : long_lat_list
+        };
+
+        parsedRoutes.push(route);
+    } 
+
+    console.log('parsedRoutes');
+    console.log(parsedRoutes);
+    return (parsedRoutes);
+}
+
+function removeRoutesAndInputs(num) {
+    console.log("removing all others");
+    routeHasBeenSelected = true;
+    for (r in routes) {
+        if (r !== num) {
+            id = routes[r]["id"];
+            // console.log(id);
+            var source_id = id + "_source";
+            // console.log(source_id);
+            map.removeLayer(id);
+            map.removeSource(source_id);
+        }
+    }
+    // Remove all items of class routeButton
+    // $(".routeButton").remove();
+    $(".inputs").attr("hidden");
+}
+
+function addRouteButton(num) {
+    var r= $('<input type="button" class="routeButton" onmouseover="hiliteOnHover(\''+num+'\',opaque)" onmouseout="hiliteOnHover(\''+num+'\', semiOpaque)" onclick="removeOtherRoutes('+num+')" value="'+routes[num]['id']+'"/>');
+    $("body").append(r);
+}
+
+function addStartPin(lat,lng) {
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    // feature for Mapbox DC
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-77.03238901390978, 38.913188059745586]
+                    },
+                    "properties": {
+                        "title": "Mapbox DC",
+                        "icon": "monument"
+                    }
+                }, {
+                    // feature for Mapbox SF
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-122.414, 37.776]
+                    },
+                    "properties": {
+                        "title": "Mapbox SF",
+                        "icon": "harbor"
+                    }
+                }]
+            }
+        },
+        "layout": {
+            // get the icon name from the source's "icon" property
+            // concatenate the name to get an icon from the style's sprite sheet
+            "icon-image": ["concat", ["get", "icon"], "-15"],
+            // get the title name from the source's "title" property
+            "text-field": ["get", "title"],
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
+        }
+    });
+}
+
+function showServerRoute(lat,lng,dist) {
+    addStartPin(lat,lng);
+    $(".routeButton").remove();
     $.post({
         url: "get_route",
-        data: '',
+        data: JSON.stringify({"start_address": {"latitude": lat, "longitude": lng}, "length": dist}),
         contentType: 'application/json',
-        success: function (data) {
-            console.log(data);
-            showRoute(data);
+        success: function (routesData) {
+            routes = parseRoutes(routesData);
+            for (r in routes) {
+                showRoute(r, routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
+                // addRouteButton(r);
+                // showRoute(routes[0]["id"], routes[0]["long_lat_list"], routes[0]["gradient_path"], semiOpaque);
+                // addRouteButton(0);
+            };
         },
     },)
 }
 
-function showServerRoute() {
-    //TODO: debug
-    $.post({
-        url: "get_route",
-        data: JSON.stringify({"start_address": {"latitude": 50, "longitude": 50}, "length": 2}),
-        contentType: 'application/json',
-        success: function (data) {
-            console.log(data);
-            showRoute(data);
-        },
-    },)
-}
 function getCurrentPosition(callback) {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(callback);
@@ -149,14 +291,192 @@ function getCurrentPosition(callback) {
     }
 }
 
-function showPosition(position) {
-    let lat = position.coords.latitude;
-    let lng = position.coords.longitude;
-    map.flyTo({
-        center: [lng, lat],
-        zoom: 14,
+function setRouteZoom(route) {
+    var bounds = route.reduce(function (bounds, coord) {
+            return bounds.extend(coord);
+    }, new mapboxgl.LngLatBounds(route[0], route[0]));
+
+    map.fitBounds(bounds, {padding: 40});
+}
+
+
+// Takes:
+//  routesIndex  : int
+//  latLongList  : a list of float pairs
+//  gradientList : a list of floats from -1.0 to 1.0
+//  opacity      : a float from 0 - 1
+// Does:
+//  Renders a route on the map whose colors match the elevation indicated by the
+//  gradient list at the opacity provided.
+function showRoute(routesIndex, latLongList, gradientList, opacity) {
+    var id = routes[routesIndex]['id'];
+    var source_id = id + "_source";
+    // TODO: set this to the extremes of all routes instead of just one
+    setRouteZoom(latLongList);
+    var geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": latLongList,
+                "type": "LineString"
+            }
+        }]
+    };
+
+    // 'line-gradient' can only be used with GeoJSON sources
+    // and the source must have the 'lineMetrics' option set to true
+    map.addSource(source_id, {
+            type: 'geojson',
+            lineMetrics: true,
+            data: geojson
+        });
+    
+    // the layer must be of type 'line'
+    var line_gradient_contents = [
+                'interpolate',
+                ['linear'],
+                ['line-progress']].concat(gradientList);
+                
+    map.addLayer({
+        type: 'line',
+        source: source_id,
+        id: id,
+        paint: {
+            'line-color': 'red',
+            'line-width': 14,
+            // 'line-gradient' must be specified using an expression
+            // with the special 'line-progress' property
+            'line-gradient': line_gradient_contents,
+            'line-opacity': opacity,
+        },
+        layout: {
+            'line-cap': 'round',
+            'line-join': 'round',
+        }
+    });
+
+    map.on("mouseenter", id, function(e) {
+        if(hoverId == null) {
+            hoverId = id;
+            if (!routeHasBeenSelected) {
+                map.setPaintProperty(id, 'line-opacity', opaque);
+                console.log("mouseenter");
+            }
+            showRouteDetails(routesIndex);
+        }
+    });
+
+    map.on("mouseleave", id, function(e) {
+        if(hoverId == id) {
+            if (!routeHasBeenSelected) {
+                map.setPaintProperty(id, 'line-opacity', semiOpaque);
+                console.log("mouseleave");
+                hideRouteDetails();
+            }
+            hoverId = null;
+        }
+    });
+
+    // Javascript is single threaded, but asynchronous. Can this break?
+    map.on("click", id, function(e) {
+        if(hoverId == id) {
+            if (!routeHasBeenSelected) {
+                map.setPaintProperty(id, 'line-opacity', opaque);
+                removeRoutesAndInputs(routesIndex);
+                console.log("click");
+            }
+        }
+    });
+}
+
+function geocodingWithMapquest() {
+    const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
+        + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
+    // console.log(target);
+    var dist = document.getElementById("distance-input").value;
+    $.get({
+        url: target,
+        success: function (data) {
+            // console.log(data);
+            var lat = data.results[0].locations[0].latLng.lat;
+            var lng = data.results[0].locations[0].latLng.lng;
+            console.log(lat, lng);
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 14,
+            });
+            showServerRoute(lat,lng,dist);
+            // getRoute();
+        }
     })
 }
+
+// Do we need this?
+function geocodingWithMapbox() {
+    var input = document.getElementById("address_input").value;
+    var address = input.split(" ").join("%20");
+    $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
+          address +
+          ".json?access_token=" +
+          mapboxgl.accessToken,
+          function(data, status){
+              var latlong = JSON.stringify(data.features[0].center);
+            document.getElementById("lat_long_here").innerHTML = latlong
+    },'json');
+}
+
+function showAddress(position) {
+    let lat = position.coords.latitude;
+    let lng = position.coords.longitude;
+    let apiAddress = "https://api.mapbox.com/geocoding/v5/mapbox.places/" +
+        lng + "%2C" + lat +
+        ".json?access_token=" +
+        mapboxgl.accessToken;
+    $.get( apiAddress,
+        function (data, status) {
+            console.log(data);
+            var address = data.features[0].properties.address + ", " + data.features[1].place_name;
+            console.log(address);
+            $('#start-address').val(address);
+        }, 'json');
+    //TODO:trigger geolocate controller to show a blue dot on the map, but will ask for permission twice,
+    // might want to use Marker controller instead?
+    noTrackGeolocateController.trigger();
+    // map.flyTo({
+    //     center: [lng, lat],
+    //     zoom: 14,
+    // })
+}
+
+// Rerenders the route at the specified opacity.
+function hiliteOnHover(route_num, opacity) {
+    id = routes[route_num]["id"];
+    var source_id = id + "_source";
+    map.setPaintProperty(id, 'line-opacity', opacity);
+}
+
+// TODO: return distance in format they provided
+function showRouteDetails(routesIndex) {
+    document.getElementById('routeDetails').innerHTML = "Distance: " + routes[routesIndex]['distance'] + "<br>Elevation Change: " + routes[routesIndex]['total_elevation_change'];
+}
+function hideRouteDetails() {
+    document.getElementById('routeDetails').innerHTML = "";
+}
+
+var test_grad = [
+                // 0.0, "yellow",
+                0.1, "yellow",
+                0.2, "lime",
+                0.3, "cyan",
+                0.4, "royalblue",
+                0.5, "blue",
+                0.6, "darkred",
+                0.7, "black",
+                0.8, "lime",
+                0.9, "yellow",
+                0.91, "red"];
 
 var lgrc_marston_route = [ 
               [-72.5267224, 42.3942209],
@@ -218,130 +538,7 @@ var campus_loop_route = [
               <!-- [-72.5267224, 42.3942209], -->
               ];
 
-var cur_route = campus_loop_route;
-
-function setRouteZoom(route) {
-    var bounds = route.reduce(function (bounds, coord) {
-            return bounds.extend(coord);
-    }, new mapboxgl.LngLatBounds(cur_route[0], cur_route[0]));
-
-    map.fitBounds(bounds, {padding: 40});
-}
-
-function showRoute() {
-    setRouteZoom(cur_route);
-    var geojson = {
-        "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "properties": {},
-            "geometry": {
-                "coordinates": cur_route,
-                "type": "LineString"
-            }
-        }]
-    };
-
-    // 'line-gradient' can only be used with GeoJSON sources
-    // and the source must have the 'lineMetrics' option set to true
-    map.addSource('line', {
-            type: 'geojson',
-            lineMetrics: true,
-            data: geojson
-        });
-    
-    // the layer must be of type 'line'
-    map.addLayer({
-        type: 'line',
-        source: 'line',
-        id: 'line',
-        paint: {
-            'line-color': 'red',
-            'line-width': 14,
-            // 'line-gradient' must be specified using an expression
-            // with the special 'line-progress' property
-            'line-gradient': [
-                'interpolate',
-                ['linear'],
-                ['line-progress'],
-                0.0, "red",
-                0.1, "yellow",
-                0.2, "lime",
-                0.3, "cyan",
-                0.4, "royalblue",
-                0.5, "blue",
-                0.6, "royalblue",
-                0.7, "cyan",
-                0.8, "lime",
-                0.9, "yellow",
-                1.0, "red"
-            ]
-        },
-        layout: {
-            'line-cap': 'round',
-            'line-join': 'round',
-            // 'line-opacity': 0.75,
-        }
-    });
-}
-
-function geocodingWithMapquest() {
-    const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
-        + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
-    // console.log(target);
-    $.get({
-        url: target,
-        success: function (data) {
-            // console.log(data);
-            var lat = data.results[0].locations[0].latLng.lat;
-            var lng = data.results[0].locations[0].latLng.lng;
-            // console.log(lat, lng);
-            map.flyTo({
-                center: [lng, lat],
-                zoom: 14,
-            });
-            getRoute();
-        }
-    })
-}
-
-function geocodingWithMapbox() {
-    var input = document.getElementById("address_input").value;
-    var address = input.split(" ").join("%20");
-    $.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" +
-          address +
-          ".json?access_token=" +
-          mapboxgl.accessToken,
-          function(data, status){
-              var latlong = JSON.stringify(data.features[0].center);
-            document.getElementById("lat_long_here").innerHTML = latlong
-    },'json');
-}
-
-function showAddress(position) {
-    let lat = position.coords.latitude;
-    let lng = position.coords.longitude;
-    let apiAddress = "https://api.mapbox.com/geocoding/v5/mapbox.places/" +
-        lng + "%2C" + lat +
-        ".json?access_token=" +
-        mapboxgl.accessToken;
-    $.get( apiAddress,
-        function (data, status) {
-            var address = data.features[0].place_name;
-            console.log(address);
-            $('#start-address').val(address);
-        }, 'json');
-    //TODO:trigger geolocate controller to show a blue dot on the map, but will ask for permission twice,
-    // might want to use Marker controller instead?
-    noTrackGeolocateController.trigger();
-    // map.flyTo({
-    //     center: [lng, lat],
-    //     zoom: 14,
-    // })
-}
-
 </script>
-
 
 </body>
 </html>

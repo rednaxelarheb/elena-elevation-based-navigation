@@ -47,50 +47,42 @@ def get_route():
         latitude = float(input_data['start_address']['latitude'])
         longitude = float(input_data['start_address']['longitude'])
         radius = input_data['length'] / 2
-        unknown_parameter = 0.001 #input_data['max_or_minimize_change'] (the elevation change we are looking for)
+        total_uphill_desired = 100 #TODO get from front end
 
-        # TODO process input data and compute best route and return it for rendering
 
         graph = download_graph(latitude, longitude, radius)
-        desired_profile = path_profile().from_total_uphill_and_dist(100, radius*2) #need to get elevation change (in place of 100) from front end
+        desired_profile = path_profile().from_total_uphill_and_dist(total_uphill_desired, radius*2) #need to get elevation change (in place of 100) from front end
         res = solver(graph, latitude, longitude, desired_profile).solve()
-        print(res)
         routes = {}
-        count = 0;
-        edge_sequence = graph.es
+        count = 0
         for route in res:
-            edges = route[0]
-            index = 0
+            ######
             path = []
+            print()
+            locations = route.get_vertex_locations()
+            slopes = route.get_profile().get_slopes()
+            distances = route.get_profile().distances
 
-            for edge in edges:
-                if index == 0:
-                    vertexid = edge_sequence[edge].source
-                    #graph.vs[vertexid]
-                    # elevation_change = graph.es[edge].attributes().get('grade') #elevation change
-                    path.append({'total_elevation_change': route[1]})
-                    path.append({'distance': route[2]})
-                    point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "gradient": graph.es[edge].attributes().get('grade')}
-                    path.append(point)
-                    vertexid2 = edge_sequence[edge].target
-                    point = {"latitude": graph.vs[vertexid2].attributes().get('y'), "longitude": graph.vs[vertexid2].attributes().get('x'), "gradient": graph.es[edge].attributes().get('grade')}
-                    path.append(point)
-                    index+=2
-                else:
-                    vertexid = edge_sequence[edge].target
-                    point = {"latitude": graph.vs[vertexid].attributes().get('y'), "longitude": graph.vs[vertexid].attributes().get('x'), "gradient": graph.es[edge].attributes().get('grade')}
-                    path.append(point)
-                    index +=1
+            slopes.append(0.0)
 
 
-
+            ind = 0
+            for x in locations:
+                x['gradient'] = slopes[ind]
+                x['distance_to_next'] = distances[ind]
+                ind +=1
+            path.append({'total_elevation_change': route.get_profile().total_uphill})
+            path.append({'distance': route.get_profile().total_distance})
+            path.append(locations)
+            path.append({"text_directions": route.get_text_directions()})
 
             count+=1
             route_name = "route%d" % count
-            # print(path)
+            print(path) #DEBUG
 
-            routes[route_name] = path #
-
+            routes[route_name] = path
+            if count>10:
+                break
 
         return jsonify(routes)
     else: #invlaid json was passed in
@@ -107,6 +99,13 @@ def validate_json_in(input_data):
         except:
             return False
 
+
+def dict_zip(*args):
+    out = {i: [] for i in args[0]}
+    for dic in args:
+        for key in out:
+            out[key].append(dic[key])
+    return out
 
 if __name__ == '__main__':
     app.run()
