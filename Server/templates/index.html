@@ -269,7 +269,7 @@ function showServerRoute(lat,lng,dist) {
     $(".routeButton").remove();
     $.post({
         url: "get_route",
-        data: JSON.stringify({"start_address": {"latitude": lat, "longitude": lng}, "length": dist}),
+        data: JSON.stringify({"start_address": {"latitude": lat, "longitude": lng}, "length": parseFloat(dist)}),
         contentType: 'application/json',
         success: function (routesData) {
             routes = parseRoutes(routesData);
@@ -369,7 +369,7 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
     });
 
     map.on("mouseleave", id, function(e) {
-        if(hoverId == id) {
+        if(hoverId === id) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', semiOpaque);
                 console.log("mouseleave");
@@ -381,7 +381,7 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
 
     // Javascript is single threaded, but asynchronous. Can this break?
     map.on("click", id, function(e) {
-        if(hoverId == id) {
+        if(hoverId === id) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', opaque);
                 removeRoutesAndInputs(routesIndex);
