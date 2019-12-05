@@ -116,13 +116,13 @@ var map = initMap();
 function getGradientColor(gradient) {
     var grades = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3];
     var colors = [
-    "rgb(0,   0,   255)", // blue
-    "rgb(0,   127, 255)", // royal blue
-    "rgb(0,   255, 255)", // cyan
-    "rgb(0,   255, 0)",   // green
-    "rgb(255, 255, 0)",   // yellow
-    "rgb(255, 127, 0)",   // orange
-    "rgb(255, 0,   0)"    // red
+        "rgb(0,   0,   255)", // blue
+        "rgb(0,   127, 255)", // royal blue
+        "rgb(0,   255, 255)", // cyan
+        "rgb(0,   255, 0)",   // green
+        "rgb(255, 255, 0)",   // yellow
+        "rgb(255, 127, 0)",   // orange
+        "rgb(255, 0,   0)"    // red
     ];
     
     // Binary Search for color threshold
@@ -149,6 +149,7 @@ function getGradientColor(gradient) {
 function parseRoutes(routesJson) {
     var parsedRoutes = [];
 
+    console.log('routesJson');
     console.log(routesJson);
     for (var r in routesJson) {
         routeData = routesJson[r];
@@ -159,19 +160,19 @@ function parseRoutes(routesJson) {
         // TODO: get actual distance from one node to next, not just even splits
         gradient_step_size = 1 / (routeData.length - 2);
         gradient_progress = gradient_step_size;
+        distance = routeData[1]["distance"];
 
-        for (var i = 2; i < routeData.length; i++) {
-            routePoint = routeData[i];
+        for (var i = 0; i < routeData[2].length; i++) {
+            routePoint = routeData[2][i];
+            // console.log(routePoint);
 
             gradient_list.push(routePoint["gradient"]);
 
             step_color = getGradientColor(routePoint["gradient"]); 
             gradient_list_colors.push(step_color);
 
-            gradient_path.push(gradient_progress);
+            gradient_path.push(routePoint["distance_to_next"] / distance);
             gradient_path.push(step_color);
-
-            gradient_progress += gradient_step_size;
 
             var long_lat_item = [routePoint["longitude"], routePoint["latitude"]];
             long_lat_list.push(long_lat_item);
@@ -180,7 +181,7 @@ function parseRoutes(routesJson) {
         var route = {
             "id"                    : r,
             "total_elevation_change": routeData[0]["total_elevation_change"],
-            "distance"              : routeData[1]["distance"],
+            "distance"              : distance,
             "gradient_list"         : gradient_list,
             "gradient_path"         : gradient_path,
             "long_lat_list"         : long_lat_list
@@ -189,6 +190,7 @@ function parseRoutes(routesJson) {
         parsedRoutes.push(route);
     } 
 
+    console.log('parsedRoutes');
     console.log(parsedRoutes);
     return (parsedRoutes);
 }
