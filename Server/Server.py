@@ -81,7 +81,8 @@ def get_route():
             print(path) #DEBUG
 
             routes[route_name] = path
-
+            if count>10:
+                break
 
         return jsonify(routes)
     else: #invlaid json was passed in
