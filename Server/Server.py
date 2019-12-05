@@ -105,7 +105,8 @@ def validate_json_in(input_data):
         try:
             jsonschema.validate(input_data, schema)
             return True
-        except:
+        except Exception as e:
+            print(e)
             return False
 
 
