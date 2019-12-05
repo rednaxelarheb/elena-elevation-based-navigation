@@ -2,7 +2,6 @@ import igraph
 import numpy as np
 import typing
 import heapq
-from collections import Counter
 from path_finding.path_objects import path_object, path_profile
 
 class solver(object):
@@ -141,7 +140,7 @@ class solver(object):
         Args:
             k_solutions: the number of solutions to return
         Returns:
-            A list with `k_solutions` elements, where each element is a `path_object` (see path_finding.path_objects.path_object)
+            A list with up to `k_solutions` elements, where each element is a `path_object` (see path_finding.path_objects.path_object)
         '''
         # we negate the cost so that our heap is a max heap,
         # allowing us to efficiently maintain the k best (lowest cost) solutions
@@ -163,25 +162,32 @@ class solver(object):
                 counter[0] -= 1
                 return (-1*self.cost_fn(profile), counter[0], tuple(new_path), profile)
 
-        heap = [generate() for _ in range(k_solutions)]
-        in_heap = Counter(t[2] for t in heap)
+        # generate initial population, without duplications
+        in_heap = set()
+        heap = []
+        for _ in range(k_solutions * 10):
+            candidate = generate()
+            if candidate[2] not in in_heap:
+                in_heap.add(candidate[2])
+                heap.append(candidate)
+            if len(heap) == k_solutions:
+                break
+        
         heapq.heapify(heap)
 
         def add_to_heap(heap_item):
-            if in_heap[heap_item[2]] == 0:
-                in_heap[heap_item[2]] += 1
+            if heap_item[2] not in in_heap:
+                in_heap.add(heap_item[2])
                 heapq.heappush(heap, heap_item)
-                removed_path = heapq.heappop(heap)[2]
-                in_heap[removed_path] -= 1
-                if in_heap[removed_path] == 0: del in_heap[removed_path]
+                in_heap.remove(heapq.heappop(heap)[2])
 
-        for _ in range(1000):
+        for _ in range(k_solutions * 10):
             add_to_heap(generate())
         
-        for _ in range(1000):
+        for _ in range(k_solutions * 10):
             res = perturb(heap[np.random.randint(0, len(heap))])
             if res is not None:
-                print("SUCCESFUL PERTURB") # TODO find out why perturbations are unsuccessful
+                # TODO find out why most perturbations are unsuccessful
                 add_to_heap(res)
         
         return [path_object(self.graph, list(t[2]), profile=t[3])
