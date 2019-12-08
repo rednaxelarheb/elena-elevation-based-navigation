@@ -4,12 +4,11 @@ import sys
 sys.path.insert(-1, '../')
 import jsonschema
 
-from path_finding import download_graph
-from path_finding import solver
-from path_finding import *
+from path_finding import download_graph, solver, path_object, path_profile
+
 
 # load flask server config from json and update setting
-settings_path = './appconfig.json'
+settings_path = '../Server/appconfig.json'
 json_data = open(settings_path).read()
 settings = json.loads(json_data)
 
@@ -98,8 +97,8 @@ def get_route():
         return Response("{}", status=600, mimetype='application/json') #
 
 
-#helper function that ensures the data passed into get_route follows our schema
-def validate_json_in(input_data):
+def validate_json_in(input_data) -> bool:
+    ''' Helper function that enforces that the data passed into get_route follows our schema '''
     with open('schemas/get_route_schema.json') as json_file:
         schema = json.load(json_file)
         try:
