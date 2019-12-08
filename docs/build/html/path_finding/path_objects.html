@@ -34,20 +34,91 @@
 <dt id="path_finding.path_objects.path_profile">
 <em class="property">class </em><code class="sig-prename descclassname">path_finding.path_objects.</code><code class="sig-name descname">path_profile</code><a class="headerlink" href="#path_finding.path_objects.path_profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A path profile object represents the altitude / distance profile of a path.</p>
+<dl class="attribute">
+<dt id="path_finding.path_objects.path_profile.altitudes">
+<code class="sig-name descname">altitudes</code><a class="headerlink" href="#path_finding.path_objects.path_profile.altitudes" title="Permalink to this definition">¶</a></dt>
+<dd><p>a list of altitudes, in meters, representing the altitude (relative to the starting point) of
+each vertex. The <cite>ith</cite> entry represents the altitude change after traversing the first <cite>i</cite> edges in the path,
+or equivalently, the first <cite>i+1</cite> vertices. The first element will always be 0. Note that if there are <cite>|E|</cite> edges
+in the path, there will be <cite>|E|+1</cite> vertices, so this list will contain <cite>|E|+1</cite> altitudes.
+If the path is a loop, the last element should be close to 0, by conservation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="path_finding.path_objects.path_profile.distances">
+<code class="sig-name descname">distances</code><a class="headerlink" href="#path_finding.path_objects.path_profile.distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>a list of distances, in meters, representing the distances traversed at each vertex.
+The <cite>ith</cite> entry represents the distance traveled after traversing the first <cite>i</cite> edges in the path,
+or equivalently, the first <cite>i+1</cite> vertices. The first element will always be 0, and the elements will be monotonically increasing.
+Note that if there are <cite>|E|</cite> edges in the path, there will be <cite>|E|+1</cite> vertices, so this list will contain <cite>|E|+1</cite> distances.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="path_finding.path_objects.path_profile.total_uphill">
+<code class="sig-name descname">total_uphill</code><a class="headerlink" href="#path_finding.path_objects.path_profile.total_uphill" title="Permalink to this definition">¶</a></dt>
+<dd><p>the total uphill altitude travelled, in meters.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="path_finding.path_objects.path_profile.total_distance">
+<code class="sig-name descname">total_distance</code><a class="headerlink" href="#path_finding.path_objects.path_profile.total_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>the total distance travelled, in meters.</p>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">path_finding</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span> <span class="o">=</span> <span class="n">download_graph</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span> <span class="o">=</span> <span class="n">path_profile</span><span class="p">()</span><span class="o">.</span><span class="n">from_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span><span class="o">.</span><span class="n">altitudes</span>
+<span class="go">[0, -1.3103053999999998, -4.1448941999999995, 0.31178560000000033, 1.6220910000000002]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span><span class="o">.</span><span class="n">distances</span>
+<span class="go">[0, 29.578, 64.922, 102.12299999999999, 131.701]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span><span class="o">.</span><span class="n">get_slopes</span><span class="p">()</span>
+<span class="go">[-0.04429999999999999, -0.04366145220418348, 0.0436403141309989, 0.009949092262017751]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span><span class="o">.</span><span class="n">total_uphill</span>
+<span class="go">5.7669852</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span><span class="o">.</span><span class="n">total_distance</span>
+<span class="go">131.701</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="path_finding.path_objects.path_profile.from_path">
 <code class="sig-name descname">from_path</code><span class="sig-paren">(</span><em class="sig-param">graph: igraph.Graph, path: List[int]</em><span class="sig-paren">)</span><a class="headerlink" href="#path_finding.path_objects.path_profile.from_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constructs the path profile from a graph and a path (list of edge ids).</p>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">path_finding</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span> <span class="o">=</span> <span class="n">download_graph</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span> <span class="o">=</span> <span class="n">path_profile</span><span class="p">()</span><span class="o">.</span><span class="n">from_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="path_finding.path_objects.path_profile.from_total_uphill_and_dist">
 <code class="sig-name descname">from_total_uphill_and_dist</code><span class="sig-paren">(</span><em class="sig-param">uphill: float</em>, <em class="sig-param">distance: float</em><span class="sig-paren">)</span><a class="headerlink" href="#path_finding.path_objects.path_profile.from_total_uphill_and_dist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constructs the path profile from a graph and a path (list of edge ids).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uphill</strong> – the total uphill altitude in the path, in meters</p></li>
+<li><p><strong>distance</strong> – the total distance travelled in the path, in meters</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">path_finding</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span> <span class="o">=</span> <span class="n">download_graph</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_profile</span><span class="p">()</span><span class="o">.</span><span class="n">from_total_uphill_and_dist</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="path_finding.path_objects.path_profile.get_slopes">
 <code class="sig-name descname">get_slopes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[float]<a class="headerlink" href="#path_finding.path_objects.path_profile.get_slopes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the slopes of each edge in the path.</p>
+<dd><p>Returns the slopes of each edge in the path. If there are <cite>|E|</cite> edges in the path, this list
+will contain <cite>|E|</cite> elements, where the <cite>ith</cite> element gives the slope of the <cite>ith</cite> edge.</p>
 </dd></dl>
 
 </dd></dl>
@@ -56,15 +127,27 @@
 <dt id="path_finding.path_objects.path_object">
 <em class="property">class </em><code class="sig-prename descclassname">path_finding.path_objects.</code><code class="sig-name descname">path_object</code><span class="sig-paren">(</span><em class="sig-param">graph: igraph.Graph, eids: List[int], profile: Optional[path_finding.path_objects.path_profile] = None</em><span class="sig-paren">)</span><a class="headerlink" href="#path_finding.path_objects.path_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A path object encapsulates a path in a graph, providing useful information and convenience functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> – the graph that the path is part of.</p></li>
+<li><p><strong>eids</strong> – a list of edge id’s in the path.</p></li>
+<li><p><strong>profile</strong> – (optional) a path profile of the path. If not provided, will be generated.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="method">
 <dt id="path_finding.path_objects.path_object.get_edge_ids">
 <code class="sig-name descname">get_edge_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[int]<a class="headerlink" href="#path_finding.path_objects.path_object.get_edge_ids" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the edge ids in the path.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="path_finding.path_objects.path_object.get_profile">
 <code class="sig-name descname">get_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; path_finding.path_objects.path_profile<a class="headerlink" href="#path_finding.path_objects.path_object.get_profile" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the path’s profile. This method is memoized.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="path_finding.path_objects.path_object.get_text_directions">
@@ -76,12 +159,13 @@ TODO: make sure that the left/right/straight navigation is correct. Test with ne
 <dl class="method">
 <dt id="path_finding.path_objects.path_object.get_vertex_ids">
 <code class="sig-name descname">get_vertex_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[int]<a class="headerlink" href="#path_finding.path_objects.path_object.get_vertex_ids" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the vertex ids in the path. Note that if there are <cite>|E|</cite> edges in the path, there will be <cite>|E|+1</cite> vertices.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="path_finding.path_objects.path_object.get_vertex_locations">
 <code class="sig-name descname">get_vertex_locations</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[Dict[str, float]]<a class="headerlink" href="#path_finding.path_objects.path_object.get_vertex_locations" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of (latitude, longitude) pairs, as a dict</p>
+<dd><p>Returns a list of <cite>(latitude, longitude)</cite> pairs, as a dict. Note that if there are <cite>|E|</cite> edges in the path, there will be <cite>|E|+1</cite> vertices.</p>
 </dd></dl>
 
 </dd></dl>
