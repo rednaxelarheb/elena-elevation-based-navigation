@@ -15,8 +15,8 @@
         }
       }
     },
-    "max_or_minimize_change": {
-      "type": "boolean"
+    "desired_uphill": {
+      "type": "number"
     },
     "length": {
       "type": "number"

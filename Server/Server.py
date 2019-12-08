@@ -88,7 +88,7 @@ def get_route():
             "latitude": FLOAT,
             "longitude": FLOAT
         }, 
-        "max_or_minimize_change": Boolean,
+        "desired_uphill": FLOAT,
         "length": FLOAT
     }
     '''
@@ -101,7 +101,9 @@ def get_route():
     latitude = float(input_data['start_address']['latitude'])
     longitude = float(input_data['start_address']['longitude'])
     total_distance = input_data['length']
-    total_uphill = 100 #TODO get from front end
+    total_uphill = 0  # Default to we want a flat route
+    if 'desired_uphill'  in input_data:  # Set how parameter for amount of uphill desired in users route
+        total_uphill = float(input_data['desired_uphill'])
 
     # get routes
     routes = get_route_helper(latitude, longitude, total_distance, total_uphill)
