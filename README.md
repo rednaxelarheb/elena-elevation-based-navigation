@@ -8,14 +8,19 @@ The user will be able to pick cycles (distance set by user) starting at their
 desired location and they will be able to choose to either 
 include or exclude an area of rapid elevation change on the route "heartbreak hills".
 
-Disclaimer: Due to map layouts, we cannot 100% guarantee that such a heartbreak hill will be available for all routes 
+Disclaimer: Due to geography, we cannot guarantee that such a heartbreak hill will be available for all routes 
 (and of course there may be no way to avoid such a hill if the area picked to cycle on is very hilly)
 
 <b>Languages</b>: Python, JavaScript, HTML/CSS. 
-Utilizes the osmxs to interface with openstreetmap.
+Utilizes the osmnx to interface with openstreetmap.
 
 <b>Team Members:</b> Bryce Bodley-Gomes, Bochen Xu, Julian Oks, Sam Harris, Alex Behr.
 
 
 #setup
-``` pip install -r requirements.txt ```
+```
+conda env create -f environment.yml
+conda activate ox
+cd Server
+python Server.py
+```

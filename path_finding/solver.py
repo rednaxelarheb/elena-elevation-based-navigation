@@ -134,7 +134,7 @@ class solver(object):
         return reconnected
 
 
-    def solve(self, k_solutions = 100) -> typing.List[typing.Tuple[typing.List[int], float, float]]:
+    def solve(self, k_solutions = 100) -> typing.List[path_object]:
         ''' Finds a route for a starting location and desired grade/distance profile.
         
         Args:

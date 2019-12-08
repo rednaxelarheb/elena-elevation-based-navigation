@@ -3,7 +3,7 @@ import numpy as np
 import typing
 
 '''
-TODO the `path_profile` and `path_object` objects need to be tested
+TODO the `path_profile` and `path_object` objects need to be tested and documented
 '''
 
 class path_profile(object):

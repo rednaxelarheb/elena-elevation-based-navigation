@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;no title&gt; &#8212; Elevate 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="module-path_finding.solver"></span><dl class="class">
+<dt id="path_finding.solver.solver">
+<em class="property">class </em><code class="sig-prename descclassname">path_finding.solver.</code><code class="sig-name descname">solver</code><span class="sig-paren">(</span><em class="sig-param">graph: igraph.Graph, latitude: float, longitude: float, desired_profile: path_finding.path_objects.path_profile, cost_fn: Union[None, Callable[[path_finding.path_objects.path_profile], float]] = None</em><span class="sig-paren">)</span><a class="headerlink" href="#path_finding.solver.solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A solver object that finds a route for a starting location and desired grade/distance profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> – an igraph object (see <cite>path_finding.download_graph.download_graph</cite>)</p></li>
+<li><p><strong>latitude</strong> – the latitude of the starting location</p></li>
+<li><p><strong>longitude</strong> – the longitude of the starting location</p></li>
+<li><p><strong>desired_profile</strong> – the desired profile that we aim to match, as defined by <cite>cost_fn</cite></p></li>
+<li><p><strong>cost_fn</strong> – evaluates the cost of the <cite>path_profile</cite> of a proposed solution</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:
+&gt;&gt;&gt; from path_finding import *
+&gt;&gt;&gt; graph = download_graph(50, 50, 1)
+&gt;&gt;&gt; desired_profile = path_profile().from_total_uphill_and_dist(100, 500)
+&gt;&gt;&gt; solver(graph, 50, 50, desired_profile).solve()</p>
+<dl class="method">
+<dt id="path_finding.solver.solver.solve">
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">k_solutions=100</em><span class="sig-paren">)</span> &#x2192; List[path_finding.path_objects.path_object]<a class="headerlink" href="#path_finding.solver.solver.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds a route for a starting location and desired grade/distance profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>k_solutions</strong> – the number of solutions to return</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list with up to <cite>k_solutions</cite> elements, where each element is a <cite>path_object</cite> (see path_finding.path_objects.path_object)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Elevate</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, On Top.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/path_finding/solver.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

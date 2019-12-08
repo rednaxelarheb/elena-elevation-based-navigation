@@ -1,4 +1,0 @@
-flask
-osmnx
-networkx
-python-igraph
