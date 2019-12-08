@@ -70,10 +70,10 @@ def get_route_helper(latitude: float, longitude: float, total_distance: float, t
     return routes
 
 
-# TODO: this route strangely does NOT match /index.html (which is the same route by internet conventions. fix this)
+#match either route
 @app.route('/', methods=['GET'])
+@app.route('/index.html', methods=['GET'])
 def index():
-    # TODO implement default app route page to be returned
     return render_template('index.html')
 
 
