@@ -9,12 +9,65 @@ from path_finding import download_graph, solver, path_object, path_profile
 
 # load flask server config from json and update setting
 settings_path = '../Server/appconfig.json'
-json_data = open(settings_path).read()
-settings = json.loads(json_data)
+get_route_schema_path = '../Server/schemas/get_route_schema.json'
+
+with open(settings_path) as f:
+    settings = json.load(f)
+
+with open(get_route_schema_path) as f:
+    get_route_schema = json.load(f)
 
 params = {}
 app = Flask(__name__, **params)
 app.config.update(settings)
+
+
+def validate_json_in(input_data) -> bool:
+    ''' Helper function that enforces that the data passed into get_route follows our schema '''
+    try:
+        jsonschema.validate(input_data, get_route_schema)
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
+
+def get_route_helper(latitude: float, longitude: float, total_distance: float, total_uphill: float):
+    '''Interfaces with the solver (see path_finding.solver) to find routes.
+
+    Args:
+        latitude: the latitude of the starting location
+        longitude: the longitude of the starting location
+        total_distance: the desired total distance, in meters
+        total_uphill: the desired total uphill altitude, in meters
+
+    Returns: A list of dictionaries with the following keys:
+        * vertex_locations: a list of dicts with (longitude, latitude) keys. See path_finding.path_objects.path_object.get_vertex_locations.
+        * total_uphill: the total uphill altitude travelled, in meters. See path_finding.path_objects.path_profile.total_uphill.
+        * total_distance: the total distance travelled, in meters. See path_finding.path_objects.path_profile.total_distance.
+        * slopes: a list with the slope of each edge in the path. See path_finding.path_objects.path_profile.get_slopes.
+        * distances: a list of distances, in meters, representing the distances traversed at each vertex. See path_finding.path_objects.path_profile.distances.
+        * altitudes: a list of altitudes, in meters, representing the altitude (relative to the starting point) of each vertex. See path_finding.path_objects.path_profile.altitudes.
+    
+    '''
+    radius = 0.000621371 * total_distance / 2 # converts meters to miles
+    graph = download_graph(latitude, longitude, radius)
+    desired_profile = path_profile().from_total_uphill_and_dist(total_uphill, total_distance)
+    cost_fn = None # TODO use a different cost function
+    solutions = solver(graph, latitude, longitude, desired_profile, cost_fn).solve()
+    routes = []
+    for path_obj in solutions:
+        profile = path_obj.get_profile()
+        routes.append({
+            'vertex_locations': path_obj.get_vertex_locations(),
+            'total_uphill': profile.total_uphill,
+            'total_distance': profile.total_distance,
+            'slopes': profile.get_slopes(),
+            'distances': profile.distances,
+            'altitudes': profile.altitudes
+        })
+    return routes
 
 
 # TODO: this route strangely does NOT match /index.html (which is the same route by internet conventions. fix this)
@@ -24,89 +77,35 @@ def index():
     return render_template('index.html')
 
 
-"""
-This is the main route to compute the route for the data the user passed in.
-EXPECTED FORMAT OF JSON PASSED IN:
-{
-"start_address": {
-"latitude": FLOAT,
-"longitude": FLOAT
-}, 
-"max_or_minimize_change": Boolean,
-length: FLOAT
-}
-"""
+
+
 @app.route('/get_route', methods=['POST'])
 def get_route():
+    '''
+    EXPECTED FORMAT OF JSON PASSED IN:
+    {
+        "start_address": {
+            "latitude": FLOAT,
+            "longitude": FLOAT
+        }, 
+        "max_or_minimize_change": Boolean,
+        "length": FLOAT
+    }
+    '''
     input_data = request.get_json()
+    # validate input
+    if not validate_json_in(input_data):
+        return Response("{}", status=600, mimetype='application/json') # response was invalid
 
-    valid = validate_json_in(input_data)
-    if valid:
+    # ingest input
+    latitude = float(input_data['start_address']['latitude'])
+    longitude = float(input_data['start_address']['longitude'])
+    total_distance = input_data['length']
+    total_uphill = 100 #TODO get from front end
 
-        latitude = float(input_data['start_address']['latitude'])
-        longitude = float(input_data['start_address']['longitude'])
-        radius = input_data['length'] / 2
-        total_uphill_desired = 100 #TODO get from front end
-
-
-        graph = download_graph(latitude, longitude, radius)
-        desired_profile = path_profile().from_total_uphill_and_dist(total_uphill_desired, radius*2) #need to get elevation change (in place of 100) from front end
-        res = solver(graph, latitude, longitude, desired_profile).solve()
-        routes = {}
-        count = 0
-        for route in res:
-            ######
-            path = []
-            locations = route.get_vertex_locations()
-            slopes = route.get_profile().get_slopes()
-            distances = route.get_profile().distances
-
-
-
-            ind = 0
-            cur_total = 0
-            for x in locations:
-                if ind < len(distances) -1:
-                    x['gradient'] = slopes[ind]
-                    x['distance_to_next'] = distances[ind]
-                    cur_total +=slopes[ind]*distances[ind]
-                    ind +=1
-                else:
-                    print(x)
-                    inverse = -1*cur_total/distances[ind] #aproximantion of what that last slope needs to be
-                    x['gradient'] = inverse
-                    x['distance_to_next'] = distances[ind]
-                    ind += 1
-
-
-            path.append({'total_elevation_change': route.get_profile().total_uphill})
-            path.append({'distance': route.get_profile().total_distance})
-            path.append(locations)
-            path.append({"text_directions": route.get_text_directions()})
-
-            count+=1
-            route_name = "route%d" % count
-            print(path) #DEBUG
-
-            routes[route_name] = path
-            if count>10:
-                break
-
-        return jsonify(routes)
-    else: #invlaid json was passed in
-        return Response("{}", status=600, mimetype='application/json') #
-
-
-def validate_json_in(input_data) -> bool:
-    ''' Helper function that enforces that the data passed into get_route follows our schema '''
-    with open('schemas/get_route_schema.json') as json_file:
-        schema = json.load(json_file)
-        try:
-            jsonschema.validate(input_data, schema)
-            return True
-        except Exception as e:
-            print(e)
-            return False
+    # get routes
+    routes = get_route_helper(latitude, longitude, total_distance, total_uphill)
+    return jsonify(routes)
 
 
 if __name__ == '__main__':
