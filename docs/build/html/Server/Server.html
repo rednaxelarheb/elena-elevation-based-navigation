@@ -33,7 +33,47 @@
   <span class="target" id="module-Server.Server"></span><dl class="function">
 <dt id="Server.Server.get_route">
 <code class="sig-prename descclassname">Server.Server.</code><code class="sig-name descname">get_route</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Server.get_route" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>EXPECTED FORMAT OF JSON PASSED IN:
+{</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“start_address”: {</dt><dd><p>“latitude”: FLOAT,
+“longitude”: FLOAT</p>
+</dd>
+</dl>
+<p>},
+“max_or_minimize_change”: Boolean,
+“length”: FLOAT</p>
+</div></blockquote>
+<p>}</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Server.Server.get_route_helper">
+<code class="sig-prename descclassname">Server.Server.</code><code class="sig-name descname">get_route_helper</code><span class="sig-paren">(</span><em class="sig-param">latitude: float</em>, <em class="sig-param">longitude: float</em>, <em class="sig-param">total_distance: float</em>, <em class="sig-param">total_uphill: float</em><span class="sig-paren">)</span><a class="headerlink" href="#Server.Server.get_route_helper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interfaces with the solver (see path_finding.solver) to find routes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong> – the latitude of the starting location</p></li>
+<li><p><strong>longitude</strong> – the longitude of the starting location</p></li>
+<li><p><strong>total_distance</strong> – the desired total distance, in meters</p></li>
+<li><p><strong>total_uphill</strong> – the desired total uphill altitude, in meters</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns: A list of dictionaries with the following keys:</dt><dd><ul class="simple">
+<li><p>vertex_locations: a list of dicts with (longitude, latitude) keys. See path_finding.path_objects.path_object.get_vertex_locations.</p></li>
+<li><p>total_uphill: the total uphill altitude travelled, in meters. See path_finding.path_objects.path_profile.total_uphill.</p></li>
+<li><p>total_distance: the total distance travelled, in meters. See path_finding.path_objects.path_profile.total_distance.</p></li>
+<li><p>slopes: a list with the slope of each edge in the path. See path_finding.path_objects.path_profile.get_slopes.</p></li>
+<li><p>distances: a list of distances, in meters, representing the distances traversed at each vertex. See path_finding.path_objects.path_profile.distances.</p></li>
+<li><p>altitudes: a list of altitudes, in meters, representing the altitude (relative to the starting point) of each vertex. See path_finding.path_objects.path_profile.altitudes.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="Server.Server.index">
