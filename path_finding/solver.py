@@ -12,7 +12,7 @@ class solver(object):
         latitude: the latitude of the starting location
         longitude: the longitude of the starting location
         desired_profile: the desired profile that we aim to match, as defined by `cost_fn`
-        cost_fn: evaluates the cost of the `path_profile` of a proposed solution
+        cost_fn: evaluates the cost of the `path_profile` of a proposed solution. 
 
     Example:
     >>> from path_finding import *

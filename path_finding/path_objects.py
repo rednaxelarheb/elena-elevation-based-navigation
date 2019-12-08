@@ -53,6 +53,10 @@ class path_profile(object):
     def from_path(self, graph: igraph.Graph, path: typing.List[int]):
         '''Constructs the path profile from a graph and a path (list of edge ids).
 
+        Args:
+            graph: the graph that the path is part of.
+            path: a list of edge id's.
+
         Example:
             >>> from path_finding import *
             >>> graph = download_graph(50, 50, 1)
