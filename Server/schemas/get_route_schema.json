@@ -20,6 +20,20 @@
     },
     "length": {
       "type": "number"
+    },
+    "desired_progile": {
+      "distances": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
+      },
+      "altitudes": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
+      } 
     }
   }
 }

@@ -80,12 +80,13 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
 mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
-var semiOpaque = 0.01;
+var semiOpaque = 0.3;
 var opaque = 1;
 var isMapInit = false;
 var routes;
 var routeHasBeenSelected = false;
 var hoverId = null;
+var routesHaveBeenRendered = false;
 
 function initMap() {
     let map = new mapboxgl.Map({
@@ -208,7 +209,7 @@ function parseRoutes(routesJson) {
     return (parsedRoutes);
 }
 
-function removeRoutesAndInputs(num) {
+function removeRoutes(num) {
     console.log("removing all others");
     routeHasBeenSelected = true;
     for (r in routes) {
@@ -280,21 +281,30 @@ function addStartPin(lat,lng) {
 function showServerRoute(lat,lng,dist,uphill) {
     // addStartPin(lat,lng);
     var profile = generateProfiles()[0];
+
+    if (routesHaveBeenRendered) {
+        // remove all routes and set routes global to empty listkj
+    }
     
+    postData ={
+        "start_address": {
+            "latitude": lat, 
+            "longitude": lng
+            }, 
+        "desired_uphill": uphill, 
+        "length": dist,
+        "desired_profile": profile
+        };
+
+    console.log(postData);
+
     $(".routeButton").remove();
     $.post({
         url: "get_route",
-        data: JSON.stringify({
-            "start_address": {
-                "latitude": lat, 
-                "longitude": lng
-                }, 
-                "desired_uphill": uphill, 
-                "length": dist,
-                "desired_profile": profile
-            }),
+        data: postData,
         contentType: 'application/json',
         success: function (routesData) {
+            routesHaveBeenRendered = true;
             routes = parseRoutes(routesData);
             for (r in routes) {
                 showRoute(r, routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
@@ -404,7 +414,7 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
         if(hoverId === id) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', opaque);
-                removeRoutesAndInputs(routesIndex);
+                removeRoutes(routesIndex);
                 console.log("click");
             }
         }
@@ -412,11 +422,14 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
 }
 
 function geocodingWithMapquest() {
+    console.log("in mapquest");
     const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
         + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
     // console.log(target);
     var dist = document.getElementById("distance-input").value * 1000;
+    console.log(dist);
     var uphill = document.getElementById("uphill-input").value;
+    console.log(uphill);
     $.get({
         url: target,
         success: function (data) {
@@ -481,17 +494,22 @@ function hiliteOnHover(route_num, opacity) {
 // TODO: return distance in format they provided
 function showRouteDetails(routesIndex) {
     document.getElementById('routeDetails').innerHTML = "Distance: " + routes[routesIndex]['distance'] + "<br>Total Elevation Gain: " + routes[routesIndex]['total_uphill'];
+    document.getElementById('routeDetails').innerHTML = "Distance: " + routes[routesIndex]['distance'] + "<br>Total Elevation Gain: " + routes[routesIndex]['total_uphill'];
 }
 function hideRouteDetails() {
     document.getElementById('routeDetails').innerHTML = "";
 }
 
 function generateProfiles() {
-    distance = document.getElementById('distance-input').value;
+    distance = document.getElementById('distance-input').value * 1000;
     uphill = document.getElementById('uphill-input').value;
     indices = Math.floor(distance / 10);
     distance_step_size = distance / indices;
     profiles = [];
+    console.log(distance);
+    console.log(uphill);
+    console.log(indices);
+    console.log(distance_step_size);
 
     // Steady up and down
     distances = [];
