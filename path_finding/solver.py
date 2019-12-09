@@ -89,7 +89,10 @@ class solver(object):
             edge_path.append(edge_id)
             last_node = next_node
         
-        edge_path += reversed(edge_path)
+        for eid in reversed(edge_path):
+            e = self.graph.es[eid]
+            edge_path.append(self.graph.get_eid(e.target, e.source))
+
         return edge_path
 
 
@@ -103,8 +106,10 @@ class solver(object):
         next_layer = []
         expansions = 0
         parents = dict()
-        while True:
-            if not layer: return None
+        search_end = None
+        while search_end is None:
+            if not layer:
+                return None
             for node in layer:
                 # check if we've exceeded our expansion budget
                 if expansions >= max_expansions:
@@ -136,13 +141,13 @@ class solver(object):
             prev = parents[last_vertex]
             new_connection.append(self.graph.get_eid(prev, last_vertex))
             last_vertex = prev
-        new_connection = reversed(new_connection)
+        new_connection = list(reversed(new_connection))
         # connect search_end -> path_end
         ending = []
         for eid in reversed(path):
             ending.append(eid)
             if self.graph.es[eid].source == search_end: break
-        ending = reversed(ending)
+        ending = list(reversed(ending))
         # chain together the 3 paths
         reconnected = beginning + new_connection + ending
         return reconnected
@@ -201,7 +206,6 @@ class solver(object):
         for _ in range(k_solutions * 10):
             res = perturb(heap[np.random.randint(0, len(heap))])
             if res is not None:
-                # TODO find out why most perturbations are unsuccessful
                 add_to_heap(res)
         
         return [path_object(self.graph, list(t[2]), profile=t[3])
