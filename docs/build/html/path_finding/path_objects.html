@@ -83,6 +83,20 @@ Note that if there are <cite>|E|</cite> edges in the path, there will be <cite>|
 </pre></div>
 </div>
 <dl class="method">
+<dt id="path_finding.path_objects.path_profile.from_altitudes_distances">
+<code class="sig-name descname">from_altitudes_distances</code><span class="sig-paren">(</span><em class="sig-param">altitudes: List[float], distances: List[float]</em><span class="sig-paren">)</span><a class="headerlink" href="#path_finding.path_objects.path_profile.from_altitudes_distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the profile’s <cite>altitudes</cite> and <cite>distances</cite> attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>altitudes</strong> – the profile’s new <cite>altitudes</cite> attribute (see attributes documentation)</p></li>
+<li><p><strong>distances</strong> – the profile’s new <cite>distances</cite> attribute (see attributes documentation)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="path_finding.path_objects.path_profile.from_path">
 <code class="sig-name descname">from_path</code><span class="sig-paren">(</span><em class="sig-param">graph: igraph.Graph, path: List[int]</em><span class="sig-paren">)</span><a class="headerlink" href="#path_finding.path_objects.path_profile.from_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs the path profile from a graph and a path (list of edge ids).</p>
@@ -105,7 +119,7 @@ Note that if there are <cite>|E|</cite> edges in the path, there will be <cite>|
 <dl class="method">
 <dt id="path_finding.path_objects.path_profile.from_total_uphill_and_dist">
 <code class="sig-name descname">from_total_uphill_and_dist</code><span class="sig-paren">(</span><em class="sig-param">uphill: float</em>, <em class="sig-param">distance: float</em><span class="sig-paren">)</span><a class="headerlink" href="#path_finding.path_objects.path_profile.from_total_uphill_and_dist" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs the path profile from a graph and a path (list of edge ids).</p>
+<dd><p>Constructs a path profile with a single edge, with distance <cite>distance</cite> and altitude change <cite>uphill</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

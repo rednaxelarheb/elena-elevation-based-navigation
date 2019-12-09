@@ -52,6 +52,12 @@
 &gt;&gt;&gt; desired_profile = path_profile().from_total_uphill_and_dist(100, 500)
 &gt;&gt;&gt; solver(graph, 50, 50, desired_profile).solve()</p>
 <dl class="method">
+<dt id="path_finding.solver.solver.dynamic_time_warping_cost_fn">
+<code class="sig-name descname">dynamic_time_warping_cost_fn</code><span class="sig-paren">(</span><em class="sig-param">profile: path_finding.path_objects.path_profile</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#path_finding.solver.solver.dynamic_time_warping_cost_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the cost of the proposed <cite>profile</cite>. Used as the default cost function.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="path_finding.solver.solver.solve">
 <code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">k_solutions=100</em><span class="sig-paren">)</span> &#x2192; List[path_finding.path_objects.path_object]<a class="headerlink" href="#path_finding.solver.solver.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds a route for a starting location and desired grade/distance profile.</p>

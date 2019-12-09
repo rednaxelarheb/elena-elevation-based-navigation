@@ -17,10 +17,15 @@ Utilizes the osmnx to interface with openstreetmap.
 <b>Team Members:</b> Bryce Bodley-Gomes, Bochen Xu, Julian Oks, Sam Harris, Alex Behr.
 
 
-#setup
+# Setup
 ```
 conda env create -f environment.yml
 conda activate ox
 cd Server
 python Server.py
 ```
+
+If you'd like to download new graphs, besides what's already in the saved graphs, be sure that you have a google maps api key in `path_finding/google_maps_api_key.txt`.
+
+# Documentation
+You can find documentation at `docs/build/html/index.html`.

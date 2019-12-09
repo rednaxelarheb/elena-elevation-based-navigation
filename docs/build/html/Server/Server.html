@@ -33,32 +33,20 @@
   <span class="target" id="module-Server.Server"></span><dl class="function">
 <dt id="Server.Server.get_route">
 <code class="sig-prename descclassname">Server.Server.</code><code class="sig-name descname">get_route</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Server.Server.get_route" title="Permalink to this definition">¶</a></dt>
-<dd><p>EXPECTED FORMAT OF JSON PASSED IN:
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>“start_address”: {</dt><dd><p>“latitude”: FLOAT,
-“longitude”: FLOAT</p>
-</dd>
-</dl>
-<p>},
-“max_or_minimize_change”: Boolean,
-“length”: FLOAT</p>
-</div></blockquote>
-<p>}</p>
+<dd><p>See <cite>get_route_schema.json</cite> for this API method’s expected input format.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="Server.Server.get_route_helper">
-<code class="sig-prename descclassname">Server.Server.</code><code class="sig-name descname">get_route_helper</code><span class="sig-paren">(</span><em class="sig-param">latitude: float</em>, <em class="sig-param">longitude: float</em>, <em class="sig-param">total_distance: float</em>, <em class="sig-param">total_uphill: float</em><span class="sig-paren">)</span><a class="headerlink" href="#Server.Server.get_route_helper" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Server.Server.</code><code class="sig-name descname">get_route_helper</code><span class="sig-paren">(</span><em class="sig-param">latitude: float, longitude: float, desired_distances: List[float], desired_altitudes: List[float]</em><span class="sig-paren">)</span><a class="headerlink" href="#Server.Server.get_route_helper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interfaces with the solver (see path_finding.solver) to find routes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>latitude</strong> – the latitude of the starting location</p></li>
 <li><p><strong>longitude</strong> – the longitude of the starting location</p></li>
-<li><p><strong>total_distance</strong> – the desired total distance, in meters</p></li>
-<li><p><strong>total_uphill</strong> – the desired total uphill altitude, in meters</p></li>
+<li><p><strong>desired_distances</strong> – the desired distances, in meters</p></li>
+<li><p><strong>desired_altitudes</strong> – the desired altitudes, in meters</p></li>
 </ul>
 </dd>
 </dl>
@@ -82,7 +70,7 @@
 
 <dl class="function">
 <dt id="Server.Server.validate_json_in">
-<code class="sig-prename descclassname">Server.Server.</code><code class="sig-name descname">validate_json_in</code><span class="sig-paren">(</span><em class="sig-param">input_data</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#Server.Server.validate_json_in" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Server.Server.</code><code class="sig-name descname">validate_json_in</code><span class="sig-paren">(</span><em class="sig-param">input_data: Dict[str, Any]</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#Server.Server.validate_json_in" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function that enforces that the data passed into get_route follows our schema</p>
 </dd></dl>
 
