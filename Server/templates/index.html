@@ -51,19 +51,27 @@
     <h1>Elevate</h1>
     <input aria-label="Where to start?" class="form-control"
         id='start-address'
-        placeholder="Where to start?" style='width:200px'
+        placeholder="Where to start?"
+        style='width:200px'
         type="text">
     <!-- <input class="form-control" id="distance-input" type="number" value="3"> -->
-    <input aria-label="How far (miles)?" class="form-control"
+    <input aria-label="How far? (km)" class="form-control"
         id='distance-input'
-        placeholder="How far (miles)?" 
+        placeholder="How far? (km)"
+        style='width:200px'
+        type="number">
+    <input aria-label="How much uphill? (m)" class="form-control"
+        id='uphill-input'
+        placeholder="How much uphill? (m)" 
         style='width:200px'
         type="number">
     <button class="btn btn-outline-secondary" id="button-locate"
             onclick="getCurrentPosition(showAddress)" type="button">📍
     <button class="btn btn-outline-secondary" id="button-go"
             onclick="geocodingWithMapquest()" type="button">Go! </button>
-    <button class="routeButton" onclick="showServerRoute(50,50,2)">Show Server Route</button>
+    <!-- <button class="routeButton" onclick="showServerRoute(42.35713,-72.48523,2.5,500)">Show Server Route</button> -->
+    <button class="routeButton" onclick="showServerRoute(50,50,2,500)">Show Server Route</button>
+    <button class="routeButton" onclick="generateProfiles()">Get Profiles</button>
     <div id="routeDetails"></div>
     <div id="turnByTurn" class="ScrollStyle"></div>
 </div>
@@ -114,15 +122,27 @@ var noTrackGeolocateController = new mapboxgl.GeolocateControl({
 var map = initMap();
 
 function getGradientColor(gradient) {
-    var grades = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3];
+    var grades = [-0.3   , -0.2625, -0.225 , -0.1875, -0.15  , -0.1125, -0.075 ,
+                  -0.0375,  0.    ,  0.0375,  0.075 ,  0.1125,  0.15  ,  0.1875,
+                   0.225 ,  0.2625,  0.3];
     var colors = [
         "rgb(0,   0,   255)", // blue
+        "rgb(0,   63,  255)", // 
         "rgb(0,   127, 255)", // royal blue
+        "rgb(0,   190, 255)", // 
         "rgb(0,   255, 255)", // cyan
-        "rgb(0,   255, 0)",   // green
-        "rgb(255, 255, 0)",   // yellow
-        "rgb(255, 127, 0)",   // orange
-        "rgb(255, 0,   0)"    // red
+        "rgb(0,   255, 190)", // 
+        "rgb(0,   255, 127)", // 
+        "rgb(0,   255, 63 )", // 
+        "rgb(0,   255, 0  )", // green
+        "rgb(63,  255, 0  )", // 
+        "rgb(127, 255, 0  )", // 
+        "rgb(190, 255, 0  )", // 
+        "rgb(255, 255, 0  )", // yellow
+        "rgb(255, 190, 0  )", // 
+        "rgb(255, 127, 0  )", // orange
+        "rgb(255, 63,  0  )", // 
+        "rgb(255, 0,   0  )"  // red
     ];
     
     // Binary Search for color threshold
@@ -151,41 +171,34 @@ function parseRoutes(routesJson) {
 
     console.log('routesJson');
     console.log(routesJson);
+    index = 0;
     for (var r in routesJson) {
-        routeData = routesJson[r];
-        gradient_list = [];
-        gradient_list_colors = [];
+        console.log(routesJson[r]);
+        routeJson = routesJson[r];
         long_lat_list = [];
         gradient_path = [];
-        // TODO: get actual distance from one node to next, not just even splits
-        gradient_step_size = 1 / (routeData.length - 2);
-        gradient_progress = gradient_step_size;
-        distance = routeData[1]["distance"];
+        total_distance = routeJson["total_distance"];
+        slopes = routeJson["slopes"];
+        slopes.unshift(0);
 
-        for (var i = 0; i < routeData[2].length; i++) {
-            routePoint = routeData[2][i];
-            // console.log(routePoint);
-
-            gradient_list.push(routePoint["gradient"]);
-
-            step_color = getGradientColor(routePoint["gradient"]); 
-            gradient_list_colors.push(step_color);
-
-            gradient_path.push(routePoint["distance_to_next"] / distance);
+        for (var i = 0; i < routeJson["distances"].length; i++) {
+            step_color = getGradientColor(slopes[i]); 
+            gradient_path.push(routeJson["distances"][i] / total_distance);
             gradient_path.push(step_color);
 
-            var long_lat_item = [routePoint["longitude"], routePoint["latitude"]];
+            var long_lat_item = [routeJson["vertex_locations"][i]["longitude"], routeJson["vertex_locations"][i]["latitude"]];
             long_lat_list.push(long_lat_item);
         }
 
         var route = {
-            "id"                    : r,
-            "total_elevation_change": routeData[0]["total_elevation_change"],
-            "distance"              : distance,
-            "gradient_list"         : gradient_list,
+            "id"                    : "route" + index.toString(),
+            "total_uphill"          : routeJson["total_uphill"],
+            "distance"              : total_distance,
             "gradient_path"         : gradient_path,
             "long_lat_list"         : long_lat_list
         };
+
+        index++;
 
         parsedRoutes.push(route);
     } 
@@ -264,20 +277,27 @@ function addStartPin(lat,lng) {
     });
 }
 
-function showServerRoute(lat,lng,dist) {
-    addStartPin(lat,lng);
+function showServerRoute(lat,lng,dist,uphill) {
+    // addStartPin(lat,lng);
+    var profile = generateProfiles()[0];
+    
     $(".routeButton").remove();
     $.post({
         url: "get_route",
-        data: JSON.stringify({"start_address": {"latitude": lat, "longitude": lng}, "length": parseFloat(dist)}),
+        data: JSON.stringify({
+            "start_address": {
+                "latitude": lat, 
+                "longitude": lng
+                }, 
+                "desired_uphill": uphill, 
+                "length": dist,
+                "desired_profile": profile
+            }),
         contentType: 'application/json',
         success: function (routesData) {
             routes = parseRoutes(routesData);
             for (r in routes) {
                 showRoute(r, routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
-                // addRouteButton(r);
-                // showRoute(routes[0]["id"], routes[0]["long_lat_list"], routes[0]["gradient_path"], semiOpaque);
-                // addRouteButton(0);
             };
         },
     },)
@@ -395,7 +415,8 @@ function geocodingWithMapquest() {
     const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
         + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
     // console.log(target);
-    var dist = document.getElementById("distance-input").value;
+    var dist = document.getElementById("distance-input").value * 1000;
+    var uphill = document.getElementById("uphill-input").value;
     $.get({
         url: target,
         success: function (data) {
@@ -407,7 +428,7 @@ function geocodingWithMapquest() {
                 center: [lng, lat],
                 zoom: 14,
             });
-            showServerRoute(lat,lng,dist);
+            showServerRoute(lat,lng,dist,uphill);
             // getRoute();
         }
     })
@@ -459,10 +480,36 @@ function hiliteOnHover(route_num, opacity) {
 
 // TODO: return distance in format they provided
 function showRouteDetails(routesIndex) {
-    document.getElementById('routeDetails').innerHTML = "Distance: " + routes[routesIndex]['distance'] + "<br>Elevation Change: " + routes[routesIndex]['total_elevation_change'];
+    document.getElementById('routeDetails').innerHTML = "Distance: " + routes[routesIndex]['distance'] + "<br>Total Elevation Gain: " + routes[routesIndex]['total_uphill'];
 }
 function hideRouteDetails() {
     document.getElementById('routeDetails').innerHTML = "";
+}
+
+function generateProfiles() {
+    distance = document.getElementById('distance-input').value;
+    uphill = document.getElementById('uphill-input').value;
+    indices = Math.floor(distance / 10);
+    distance_step_size = distance / indices;
+    profiles = [];
+
+    // Steady up and down
+    distances = [];
+    altitudes = [];
+    altitude_step_size = uphill / (indices / 2);
+    for (var i = 0; i < indices + 1; i++) {
+        distances.push(i * distance_step_size);
+        if_all_steps_went_up = i * altitude_step_size;
+        if (if_all_steps_went_up < uphill) {
+            altitudes.push(if_all_steps_went_up);
+        } else {
+            altitudes.push(2 * uphill - if_all_steps_went_up);
+        }
+    }
+    profiles.push({"distances": distances,"altitudes": altitudes});
+
+    console.log(profiles);
+    return profiles;
 }
 
 var test_grad = [
