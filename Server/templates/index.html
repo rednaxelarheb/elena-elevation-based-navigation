@@ -72,6 +72,10 @@
     <!-- <button class="routeButton" onclick="showServerRoute(42.35713,-72.48523,2.5,500)">Show Server Route</button> -->
     <button class="routeButton" onclick="showServerRoute(50,50,2,500)">Show Server Route</button>
     <button class="routeButton" onclick="generateProfiles()">Get Profiles</button>
+    <form>
+        <input type="radio" name="profile" value="Gentle Up and Down" checked> Gentle Up and Down<br>
+        <input type="radio" name="profile" value="Gentle Down and Up"> Gentle Down and Up<br>
+      </form>
     <div id="routeDetails"></div>
     <div id="turnByTurn" class="ScrollStyle"></div>
 </div>
@@ -170,11 +174,11 @@ function getGradientColor(gradient) {
 function parseRoutes(routesJson) {
     var parsedRoutes = [];
 
-    console.log('routesJson');
-    console.log(routesJson);
+    // console.log('routesJson');
+    // console.log(routesJson);
     index = 0;
     for (var r in routesJson) {
-        console.log(routesJson[r]);
+        // console.log(routesJson[r]);
         routeJson = routesJson[r];
         long_lat_list = [];
         gradient_path = [];
@@ -202,6 +206,9 @@ function parseRoutes(routesJson) {
         index++;
 
         parsedRoutes.push(route);
+        if (r > 6) {
+            break;
+        }
     } 
 
     console.log('parsedRoutes');
@@ -210,7 +217,7 @@ function parseRoutes(routesJson) {
 }
 
 function removeRoutes(num) {
-    console.log("removing all others");
+    // console.log("removing all others");
     routeHasBeenSelected = true;
     for (r in routes) {
         if (r !== num) {
@@ -392,7 +399,7 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
             hoverId = id;
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', opaque);
-                console.log("mouseenter");
+                // console.log("mouseenter");
             }
             showRouteDetails(routesIndex);
         }
@@ -402,7 +409,7 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
         if(hoverId === id) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', semiOpaque);
-                console.log("mouseleave");
+                // console.log("mouseleave");
                 hideRouteDetails();
             }
             hoverId = null;
@@ -415,28 +422,28 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
             if (!routeHasBeenSelected) {
                 map.setPaintProperty(id, 'line-opacity', opaque);
                 removeRoutes(routesIndex);
-                console.log("click");
+                // console.log("click");
             }
         }
     });
 }
 
 function geocodingWithMapquest() {
-    console.log("in mapquest");
+    // console.log("in mapquest");
     const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
         + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
     // console.log(target);
     var dist = document.getElementById("distance-input").value * 1000;
-    console.log(dist);
+    // console.log(dist);
     var uphill = document.getElementById("uphill-input").value;
-    console.log(uphill);
+    // console.log(uphill);
     $.get({
         url: target,
         success: function (data) {
             // console.log(data);
             var lat = data.results[0].locations[0].latLng.lat;
             var lng = data.results[0].locations[0].latLng.lng;
-            console.log(lat, lng);
+            // console.log(lat, lng);
             map.flyTo({
                 center: [lng, lat],
                 zoom: 14,
@@ -470,9 +477,9 @@ function showAddress(position) {
         mapboxgl.accessToken;
     $.get( apiAddress,
         function (data, status) {
-            console.log(data);
+            // console.log(data);
             var address = data.features[0].properties.address + ", " + data.features[1].place_name;
-            console.log(address);
+            // console.log(address);
             $('#start-address').val(address);
         }, 'json');
     //TODO:trigger geolocate controller to show a blue dot on the map, but will ask for permission twice,
@@ -506,10 +513,10 @@ function generateProfiles() {
     indices = Math.floor(distance / 10);
     distance_step_size = distance / indices;
     profiles = [];
-    console.log(distance);
-    console.log(uphill);
-    console.log(indices);
-    console.log(distance_step_size);
+    // console.log(distance);
+    // console.log(uphill);
+    // console.log(indices);
+    // console.log(distance_step_size);
 
     // Steady up and down
     distances = [];
@@ -522,6 +529,21 @@ function generateProfiles() {
             altitudes.push(if_all_steps_went_up);
         } else {
             altitudes.push(2 * uphill - if_all_steps_went_up);
+        }
+    }
+    profiles.push({"distances": distances,"altitudes": altitudes});
+
+    // Steady down and up
+    distances = [];
+    altitudes = [];
+    altitude_step_size = uphill / (indices / 2);
+    for (var i = 0; i < indices + 1; i++) {
+        distances.push(i * distance_step_size);
+        if_all_steps_went_up = i * altitude_step_size;
+        if (if_all_steps_went_up < uphill) {
+            altitudes.push(-if_all_steps_went_up);
+        } else {
+            altitudes.push(2 * -uphill + if_all_steps_went_up);
         }
     }
     profiles.push({"distances": distances,"altitudes": altitudes});
