@@ -76,6 +76,8 @@
         <input type="radio" name="profile" value="Gentle Up and Down" checked> Gentle Up and Down<br>
         <input type="radio" name="profile" value="Gentle Down and Up"> Gentle Down and Up<br>
       </form>
+    <button class="routeButton" onclick="addDumbButton()">Add a Button</button>
+    <div id="routeOptions" class="routeOptions"></div>
     <div id="routeDetails"></div>
     <div id="turnByTurn" class="ScrollStyle"></div>
 </div>
@@ -84,7 +86,7 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
 mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
-var semiOpaque = 0.3;
+var semiOpaque = 0.07;
 var opaque = 1;
 var isMapInit = false;
 var routes;
@@ -127,18 +129,35 @@ var noTrackGeolocateController = new mapboxgl.GeolocateControl({
 var map = initMap();
 
 function getGradientColor(gradient) {
-    var grades = [-0.3   , -0.2625, -0.225 , -0.1875, -0.15  , -0.1125, -0.075 ,
-                  -0.0375,  0.    ,  0.0375,  0.075 ,  0.1125,  0.15  ,  0.1875,
-                   0.225 ,  0.2625,  0.3];
+    var numGrades = 17;
+    var range = 0.1;
+    var gradeStep = 2 * range / (numGrades - 1)
+    var grades = [];
+
+    for (var i = 0; i < numGrades; i++) {
+        grades.push(-range + gradeStep * i)
+    }
+
+    // var grades = [-0.3   , -0.2625, -0.225 , -0.1875, -0.15  , -0.1125, -0.075 ,
+    //               -0.0375,  0.    ,  0.0375,  0.075 ,  0.1125,  0.15  ,  0.1875,
+    //                0.225 ,  0.2625,  0.3];
     var colors = [
-        "rgb(0,   0,   255)", // blue
-        "rgb(0,   63,  255)", // 
-        "rgb(0,   127, 255)", // royal blue
-        "rgb(0,   190, 255)", // 
-        "rgb(0,   255, 255)", // cyan
-        "rgb(0,   255, 190)", // 
-        "rgb(0,   255, 127)", // 
-        "rgb(0,   255, 63 )", // 
+        // "rgb(0,   0,   255)", // blue
+        // "rgb(0,   63,  255)", // 
+        // "rgb(0,   127, 255)", // royal blue
+        // "rgb(0,   190, 255)", // 
+        // "rgb(0,   255, 255)", // cyan
+        // "rgb(0,   255, 190)", // 
+        // "rgb(0,   255, 127)", // 
+        // "rgb(0,   255, 63 )", // 
+        "rgb(255, 0,   0  )",  // red
+        "rgb(255, 63,  0  )", // 
+        "rgb(255, 127, 0  )", // orange
+        "rgb(255, 190, 0  )", // 
+        "rgb(255, 255, 0  )", // yellow
+        "rgb(190, 255, 0  )", // 
+        "rgb(127, 255, 0  )", // 
+        "rgb(63,  255, 0  )", // 
         "rgb(0,   255, 0  )", // green
         "rgb(63,  255, 0  )", // 
         "rgb(127, 255, 0  )", // 
@@ -174,8 +193,8 @@ function getGradientColor(gradient) {
 function parseRoutes(routesJson) {
     var parsedRoutes = [];
 
-    // console.log('routesJson');
-    // console.log(routesJson);
+    console.log("routesJson[0]['slopes']");
+    console.log(routesJson[0]['slopes']);
     index = 0;
     for (var r in routesJson) {
         // console.log(routesJson[r]);
@@ -200,7 +219,8 @@ function parseRoutes(routesJson) {
             "total_uphill"          : routeJson["total_uphill"],
             "distance"              : total_distance,
             "gradient_path"         : gradient_path,
-            "long_lat_list"         : long_lat_list
+            "long_lat_list"         : long_lat_list,
+            "slopes"                : routeJson["slopes"]
         };
 
         index++;
@@ -211,13 +231,15 @@ function parseRoutes(routesJson) {
         }
     } 
 
-    console.log('parsedRoutes');
-    console.log(parsedRoutes);
+    console.log("parsedRoutes[0]['slopes']");
+    console.log(parsedRoutes[0]['slopes']);
+    console.log("parsedRoutes[0]['gradient_path']");
+    console.log(parsedRoutes[0]['gradient_path']);
     return (parsedRoutes);
 }
 
 function removeRoutes(num) {
-    // console.log("removing all others");
+    console.log(num);
     routeHasBeenSelected = true;
     for (r in routes) {
         if (r !== num) {
@@ -230,13 +252,13 @@ function removeRoutes(num) {
         }
     }
     // Remove all items of class routeButton
-    // $(".routeButton").remove();
+    $(".routeButton").remove();
     $(".inputs").attr("hidden");
 }
 
 function addRouteButton(num) {
-    var r= $('<input type="button" class="routeButton" onmouseover="hiliteOnHover(\''+num+'\',opaque)" onmouseout="hiliteOnHover(\''+num+'\', semiOpaque)" onclick="removeOtherRoutes('+num+')" value="'+routes[num]['id']+'"/>');
-    $("body").append(r);
+    var r= $('<input type="button" class="routeButton" onmouseover="mouseOverBehaviour(\''+num+'\')" onmouseout="mouseOutBehaviour(\''+num+'\')" onclick="mouseClickBehaviour(\''+num+'\')" value="'+routes[num]['id']+'"<br>');
+    $(".routeOptions").append(r);
 }
 
 function addStartPin(lat,lng) {
@@ -303,7 +325,7 @@ function showServerRoute(lat,lng,dist,uphill) {
         "desired_profile": profile
         });
 
-    console.log(postData);
+    // console.log(postData);
 
     $(".routeButton").remove();
     $.post({
@@ -315,6 +337,7 @@ function showServerRoute(lat,lng,dist,uphill) {
             routes = parseRoutes(routesData);
             for (r in routes) {
                 showRoute(r, routes[r]["long_lat_list"], routes[r]["gradient_path"], semiOpaque);
+                addRouteButton(r)
             };
         },
     },)
@@ -395,37 +418,52 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
     });
 
     map.on("mouseenter", id, function(e) {
-        if(hoverId == null) {
-            hoverId = id;
-            if (!routeHasBeenSelected) {
-                map.setPaintProperty(id, 'line-opacity', opaque);
-                // console.log("mouseenter");
-            }
-            showRouteDetails(routesIndex);
-        }
+        mouseOverBehaviour(routesIndex);
     });
 
     map.on("mouseleave", id, function(e) {
-        if(hoverId === id) {
-            if (!routeHasBeenSelected) {
-                map.setPaintProperty(id, 'line-opacity', semiOpaque);
-                // console.log("mouseleave");
-                hideRouteDetails();
-            }
-            hoverId = null;
-        }
+        mouseOutBehaviour(routesIndex);
     });
 
     // Javascript is single threaded, but asynchronous. Can this break?
     map.on("click", id, function(e) {
-        if(hoverId === id) {
-            if (!routeHasBeenSelected) {
-                map.setPaintProperty(id, 'line-opacity', opaque);
-                removeRoutes(routesIndex);
-                // console.log("click");
-            }
-        }
+        mouseClickBehaviour(routesIndex);
     });
+}
+
+function mouseOverBehaviour(r) {
+    var id = routes[r]['id'];
+    if(hoverId === null) {
+        hoverId = id;
+        if (!routeHasBeenSelected) {
+            map.setPaintProperty(id, 'line-opacity', opaque);
+            // console.log("mouseenter");
+        }
+        showRouteDetails(r);
+    }
+}
+
+function mouseOutBehaviour(r) {
+    var id = routes[r]['id'];
+    if(hoverId === id) {
+        if (!routeHasBeenSelected) {
+            map.setPaintProperty(id, 'line-opacity', semiOpaque);
+            // console.log("mouseleave");
+            hideRouteDetails();
+        }
+        hoverId = null;
+    }
+}
+
+function mouseClickBehaviour(r) {
+    var id = routes[r]['id'];
+    if(hoverId === id) {
+        if (!routeHasBeenSelected) {
+            map.setPaintProperty(id, 'line-opacity', opaque);
+            removeRoutes(r);
+            // console.log("click");
+        }
+    }
 }
 
 function geocodingWithMapquest() {
@@ -548,7 +586,7 @@ function generateProfiles() {
     }
     profiles.push({"distances": distances,"altitudes": altitudes});
 
-    console.log(profiles);
+    // console.log(profiles);
     return profiles;
 }
 
