@@ -21,7 +21,7 @@
     "length": {
       "type": "number"
     },
-    "desired_progile": {
+    "desired_profile": {
       "distances": {
         "type": "array",
         "items": {
