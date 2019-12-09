@@ -60,7 +60,7 @@ class solver(object):
         best = np.inf
         best_idx = -1
         for idx, node in enumerate(self.graph.vs):
-            dist = np.linalg.norm(np.subtract([lat, long], [node['x'], node['y']]))
+            dist = np.linalg.norm(np.subtract([lat, long], [node['y'], node['x']]))
             if dist <= best:
                 best = dist
                 best_idx = idx
