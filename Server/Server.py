@@ -45,6 +45,7 @@ def get_route_helper(latitude: float, longitude: float, desired_distances: typin
 
     Returns: A list of dictionaries with the following keys:
         * vertex_locations: a list of dicts with (longitude, latitude) keys. See path_finding.path_objects.path_object.get_vertex_locations.
+        * textual_directions: a string, text directions for the path, in plain english.
         * total_uphill: the total uphill altitude travelled, in meters. See path_finding.path_objects.path_profile.total_uphill.
         * total_distance: the total distance travelled, in meters. See path_finding.path_objects.path_profile.total_distance.
         * slopes: a list with the slope of each edge in the path. See path_finding.path_objects.path_profile.get_slopes.
@@ -61,6 +62,7 @@ def get_route_helper(latitude: float, longitude: float, desired_distances: typin
         profile = path_obj.get_profile()
         routes.append({
             'vertex_locations': path_obj.get_vertex_locations(),
+            'textual_directions': path_obj.get_text_directions(),
             'total_uphill': profile.total_uphill,
             'total_distance': profile.total_distance,
             'slopes': profile.get_slopes(),
