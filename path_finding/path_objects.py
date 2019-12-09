@@ -77,9 +77,22 @@ class path_profile(object):
         self.total_distance = self.distances[-1]
 
         return self
-    
+
+    def from_altitudes_distances(self, altitudes: typing.List[float], distances: typing.List[float]):
+        '''Sets the profile's `altitudes` and `distances` attributes.
+
+        Args:
+            altitudes: the profile's new `altitudes` attribute (see attributes documentation)
+            distances: the profile's new `distances` attribute (see attributes documentation)
+        '''
+        self.altitudes = altitudes
+        self.distances = distances
+        self.total_distance = distances[-1]
+        self.total_uphill = np.maximum(0, np.ediff1d(altitudes)).sum()
+        return self
+
     def from_total_uphill_and_dist(self, uphill: float, distance: float):
-        '''Constructs the path profile from a graph and a path (list of edge ids).
+        '''Constructs a path profile with a single edge, with distance `distance` and altitude change `uphill`
 
         Args:
             uphill: the total uphill altitude in the path, in meters

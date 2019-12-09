@@ -3,6 +3,7 @@ import json
 import sys
 sys.path.insert(-1, '../')
 import jsonschema
+import typing
 
 from path_finding import download_graph, solver, path_object, path_profile
 
@@ -22,7 +23,7 @@ app = Flask(__name__, **params)
 app.config.update(settings)
 
 
-def validate_json_in(input_data) -> bool:
+def validate_json_in(input_data: typing.Dict[str, typing.Any]) -> bool:
     ''' Helper function that enforces that the data passed into get_route follows our schema '''
     try:
         jsonschema.validate(input_data, get_route_schema)
@@ -33,14 +34,14 @@ def validate_json_in(input_data) -> bool:
 
 
 
-def get_route_helper(latitude: float, longitude: float, total_distance: float, total_uphill: float):
+def get_route_helper(latitude: float, longitude: float, desired_distances: typing.List[float], desired_altitudes: typing.List[float]):
     '''Interfaces with the solver (see path_finding.solver) to find routes.
 
     Args:
         latitude: the latitude of the starting location
         longitude: the longitude of the starting location
-        total_distance: the desired total distance, in meters
-        total_uphill: the desired total uphill altitude, in meters
+        desired_distances: the desired distances, in meters
+        desired_altitudes: the desired altitudes, in meters
 
     Returns: A list of dictionaries with the following keys:
         * vertex_locations: a list of dicts with (longitude, latitude) keys. See path_finding.path_objects.path_object.get_vertex_locations.
@@ -51,11 +52,10 @@ def get_route_helper(latitude: float, longitude: float, total_distance: float, t
         * altitudes: a list of altitudes, in meters, representing the altitude (relative to the starting point) of each vertex. See path_finding.path_objects.path_profile.altitudes.
     
     '''
-    radius = 0.000621371 * total_distance / 2 # converts meters to miles
+    radius = 0.000621371 * desired_distances[-1] / 2 # converts meters to miles
     graph = download_graph(latitude, longitude, radius)
-    desired_profile = path_profile().from_total_uphill_and_dist(total_uphill, total_distance)
-    cost_fn = None # TODO use a different cost function
-    solutions = solver(graph, latitude, longitude, desired_profile, cost_fn).solve()
+    desired_profile = path_profile().from_altitudes_distances(desired_altitudes, desired_distances)
+    solutions = solver(graph, latitude, longitude, desired_profile).solve()
     routes = []
     for path_obj in solutions:
         profile = path_obj.get_profile()
@@ -81,17 +81,7 @@ def index():
 
 @app.route('/get_route', methods=['POST'])
 def get_route():
-    '''
-    EXPECTED FORMAT OF JSON PASSED IN:
-    {
-        "start_address": {
-            "latitude": FLOAT,
-            "longitude": FLOAT
-        }, 
-        "desired_uphill": FLOAT,
-        "length": FLOAT
-    }
-    '''
+    ''' See `get_route_schema.json` for this API method's expected input format. '''
     input_data = request.get_json()
     # validate input
     if not validate_json_in(input_data):
@@ -100,13 +90,14 @@ def get_route():
     # ingest input
     latitude = float(input_data['start_address']['latitude'])
     longitude = float(input_data['start_address']['longitude'])
-    total_distance = input_data['length']
-    total_uphill = 0  # Default to we want a flat route
-    if 'desired_uphill'  in input_data:  # Set how parameter for amount of uphill desired in users route
-        total_uphill = float(input_data['desired_uphill'])
-
+    desired_distances = input_data['desired_profile']['distances']
+    desired_altitudes = input_data['desired_profile']['altitudes']
+    # we can remove total distance and uphill; these are implied by the profile
+    #total_distance = float(input_data['length'])
+    #total_uphill = float(input_data['desired_uphill'])
+ 
     # get routes
-    routes = get_route_helper(latitude, longitude, total_distance, total_uphill)
+    routes = get_route_helper(latitude, longitude, desired_distances, desired_altitudes)
     return jsonify(routes)
 
 

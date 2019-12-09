@@ -3,6 +3,9 @@ import numpy as np
 import typing
 import heapq
 from path_finding.path_objects import path_object, path_profile
+from scipy.interpolate import CubicSpline
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
 
 class solver(object):
     ''' A solver object that finds a route for a starting location and desired grade/distance profile.
@@ -31,15 +34,26 @@ class solver(object):
         self.max_path_length = 50
         self.desired_profile = desired_profile
         if cost_fn is None:
-            # TODO use dynamic time warping (or another algorithm) as the default cost function 
-            def default_cost_fn(profile):
-                dp = self.desired_profile
-                err_alt = abs(dp.total_uphill - profile.total_uphill) / max(1e-6, dp.total_uphill)
-                err_dist = abs(dp.total_distance - profile.total_distance) / max(1e-6, dp.total_distance)
-                return err_alt + err_dist
-            self.cost_fn = default_cost_fn
+            self.cost_fn = self.dynamic_time_warping_cost_fn
         else:
             self.cost_fn = cost_fn
+    
+    def dynamic_time_warping_cost_fn(self, profile: path_profile) -> float:
+        ''' Evaluates the cost of the proposed `profile`. Used as the default cost function. '''
+        dp = self.desired_profile
+        # compute splines
+        des_spline = CubicSpline(np.array(dp.distances) / dp.total_distance, dp.altitudes)
+        prof_spline = CubicSpline(np.array(profile.distances) / profile.total_distance, profile.altitudes)
+        # evaluate splines on 50 points
+        xs = np.arange(0, 1, 1/50)
+        des = np.stack((xs, des_spline(xs))).T
+        prof = np.stack((xs, prof_spline(xs))).T
+        # calculate distance using dynamic time warping
+        dtw_dist, _ = fastdtw(des, prof, dist=euclidean)
+        # scale dtw distance by total distance relative error
+        distance_coeff = 1 + (abs(profile.total_distance - dp.total_distance) / dp.total_distance)
+        cost = distance_coeff * dtw_dist
+        return cost
     
     def _find_nearest_vertex(self, lat: float, long: float) -> int:
         ''' Returns the name of the nearest vertex '''
