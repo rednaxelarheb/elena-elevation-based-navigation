@@ -33,8 +33,8 @@ def download_graph(latitude: float, longitude: float, radius: float) -> igraph.G
     if os.path.exists(filename):
         graph = igraph.Graph.Read_GraphML(filename)
     else:
-        should_download = input('Are you sure you want to download data? (y/n): ')
-        assert should_download.lower() == 'y'
+        #should_download = input('Are you sure you want to download data? (y/n): ')
+        #assert should_download.lower() == 'y'
         with open(os.path.join(this_files_dir, 'google_maps_api_key.txt'), 'r') as f:
             google_maps_api_key = f.readline()
         graph = _get_graph_not_memoized(latitude, longitude, radius, google_maps_api_key)
