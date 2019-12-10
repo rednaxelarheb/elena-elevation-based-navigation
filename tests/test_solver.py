@@ -4,14 +4,13 @@ import osmnx
 import networkx
 import igraph
 import os
-from path_finding import *
-#from path_finding.solver import *
-#from path_finding.download_graph import *
-#from path_finding.path_objects import *
+from path_finding.solver import *
+from path_finding.download_graph import *
+from path_finding.path_objects import *
 
-'''
+
 this_files_dir = os.path.dirname(os.path.realpath(__file__))
-
+'''
 def test_1():
     #filename = os.path.join(this_files_dir, 'test_graphs', 'test_graph_1.gz')
     filename = os.path.join(this_files_dir, 'test_graphs', 'test_graph_1')
@@ -95,19 +94,23 @@ def test_path_get_vertex_locations():
     path = path_object(in_graph,in_eids,in_profile)
     vertex_dict = path.get_vertex_locations()
     assert(len(vertex_dict) == 3)
-    assert(vertex_dict[0].'latitude' == 0)
-    assert(vertex_dict[0].'longitude' == 0)
-    assert(vertex_dict[1].'latitude' == 5)
-    assert(vertex_dict[1].'longitude' == 0)
-    assert(vertex_dict[2].'latitude' == 5)
-    assert(vertex_dict[2].'longitude' == 5)
+    assert(vertex_dict[0].latitude == 0)
+    assert(vertex_dict[0].longitude == 0)
+    assert(vertex_dict[1].latitude == 5)
+    assert(vertex_dict[1].longitude == 0)
+    assert(vertex_dict[2].latitude == 5)
+    assert(vertex_dict[2].longitude == 5)
     return
 
 def test_solver_init():
     testgraph = igraph.Graph()
+    assert(testgraph)
     testprofile = path_profile().from_total_uphill_and_dist(100, 500)
+    assert(testprofile)
     sol = solver()
+    assert(sol)
     sol = solver(igraph.Graph,15.0,15.0)
+    assert(sol)
 
 if __name__ == '__main__':
     test_profile_init()
