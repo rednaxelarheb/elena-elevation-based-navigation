@@ -92,8 +92,9 @@ var opaque = 1;
 var isMapInit = false;
 var routes;
 var routeHasBeenSelected = false;
+var selectedRoute = -1;
 var hoverId = null;
-var routesHaveBeenRendered = false;
+var notFirstSearch = false;
 var numProfiles = 2;
 
 function initMap() {
@@ -244,20 +245,27 @@ function parseRoutes(routesJson) {
 
 function removeRoutes(num) {
     console.log(num);
-    routeHasBeenSelected = true;
-    for (r in routes) {
-        if (r !== num) {
-            id = routes[r]["id"];
-            // console.log(id);
-            var source_id = id + "_source";
-            // console.log(source_id);
-            map.removeLayer(id);
-            map.removeSource(source_id);
+    if (routeHasBeenSelected) {
+        console.log('In the correct conditional')
+        id = routes[selectedRoute]["id"];
+        // console.log(id);
+        var source_id = id + "_source";
+        // console.log(source_id);
+        map.removeLayer(id);
+        map.removeSource(source_id);
+    } else {
+        for (r in routes) {
+            if (r !== num) {
+                id = routes[r]["id"];
+                // console.log(id);
+                var source_id = id + "_source";
+                // console.log(source_id);
+                map.removeLayer(id);
+                map.removeSource(source_id);
+            }
         }
+        $(".routeButton").remove();
     }
-    // Remove all items of class routeButton
-    $(".routeButton").remove();
-    $(".inputs").attr("hidden");
 }
 
 function addRouteButton(num) {
@@ -325,10 +333,6 @@ function showServerRoute(lat,lng,dist,uphill) {
     console.log(profile);
 
     setRouteZoom(lng, lat);
-
-    if (routesHaveBeenRendered) {
-        // remove all routes and set routes global to empty list
-    }
     
     postData = JSON.stringify({
         "start_address": {
@@ -339,6 +343,7 @@ function showServerRoute(lat,lng,dist,uphill) {
         });
 
     // console.log(postData);
+    console.log("Waiting for data")
 
     $(".routeButton").remove();
     $.post({
@@ -514,12 +519,26 @@ function mouseClickBehaviour(r) {
         if (!routeHasBeenSelected) {
             map.setPaintProperty(id, 'line-opacity', opaque);
             removeRoutes(r);
-            // console.log("click");
+            routeHasBeenSelected = true;
+            selectedRoute = r;
+            console.log(routeHasBeenSelected);
         }
     }
 }
 
 function geocodingWithMapquest() {
+
+    if (notFirstSearch) {
+        hideRouteDetails();
+        removeRoutes(-1);
+        routes = [];
+        routeHasBeenSelected = false;
+        selectedRoute = -1;
+        hoverId = null;
+    }
+
+    notFirstSearch = true;
+
     // console.log("in mapquest");
     const target = "https://www.mapquestapi.com/geocoding/v1/address?key=" + mapquestApiKey
         + "&inFormat=kvp&outFormat=json&location=" + $('#start-address').val().split(" ").join("+") + "&thumbMaps=false";
@@ -528,10 +547,11 @@ function geocodingWithMapquest() {
     // console.log(dist);
     var uphill = document.getElementById("uphill-input").value;
     // console.log(uphill);
+
+
     $.get({
         url: target,
         success: function (data) {
-            // console.log(data);
             var lat = data.results[0].locations[0].latLng.lat;
             var lng = data.results[0].locations[0].latLng.lng;
             // console.log(lat, lng);
