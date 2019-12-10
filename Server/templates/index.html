@@ -195,6 +195,7 @@ function getGradientColor(gradient) {
 function parseRoutes(routesJson) {
     var parsedRoutes = [];
 
+    console.log(routesJson);
     console.log("routesJson[0]['slopes']");
     console.log(routesJson[0]['slopes']);
     index = 0;
@@ -222,7 +223,8 @@ function parseRoutes(routesJson) {
             "distance"              : total_distance,
             "gradient_path"         : gradient_path,
             "long_lat_list"         : long_lat_list,
-            "slopes"                : routeJson["slopes"]
+            "slopes"                : routeJson["slopes"],
+            "textual_directions"    : routeJson["textual_directions"]
         };
 
         index++;
@@ -259,7 +261,7 @@ function removeRoutes(num) {
 }
 
 function addRouteButton(num) {
-    var r= $('<input type="button" class="routeButton" onmouseover="mouseOverBehaviour(\''+num+'\')" onmouseout="mouseOutBehaviour(\''+num+'\')" onclick="mouseClickBehaviour(\''+num+'\')" value="'+routes[num]['id']+'"<br>');
+    var r= $('<input type="button" class="routeButton" onmouseover="mouseOverBehaviour(\''+num+'\')" onmouseout="mouseOutBehaviour(\''+num+'\')" onclick="mouseClickBehaviour(\''+num+'\')" value="'+routes[num]['id']+'" style="width:200px">');
     $(".routeOptions").append(r);
 }
 
@@ -538,9 +540,8 @@ function geocodingWithMapquest() {
                 zoom: 14,
             });
             showServerRoute(lat,lng,parseFloat(dist), parseFloat(uphill));
-            // getRoute();
         }
-    })
+    });
 }
 
 // Do we need this?
@@ -589,11 +590,13 @@ function hiliteOnHover(route_num, opacity) {
 
 // TODO: return distance in format they provided
 function showRouteDetails(routesIndex) {
-    document.getElementById('routeDetails').innerHTML = "Distance: " + (routes[routesIndex]['distance'] / 1000).toFixed(2) + " km<br>Total Elevation Gain: " + routes[routesIndex]['total_uphill'].toFixed(2) + " m";
+    document.getElementById('routeDetails').innerHTML = "Distance: " + (routes[routesIndex]['distance'] / 1000).toFixed(2) + " km<br>Total Elevation Gain: " + routes[routesIndex]['total_uphill'].toFixed(2) + " m<br>Directions:";
+    document.getElementById('turnByTurn').innerHTML = routes[routesIndex]['textual_directions'];
     // document.getElementById('routeDetails').innerHTML = "Distance: " + routes[routesIndex]['distance'] + "<br>Total Elevation Gain: " + routes[routesIndex]['total_uphill'];
 }
 function hideRouteDetails() {
     document.getElementById('routeDetails').innerHTML = "";
+    document.getElementById('turnByTurn').innerHTML = "";
 }
 
 function generateProfiles() {
