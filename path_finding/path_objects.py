@@ -47,7 +47,7 @@ class path_profile(object):
         will contain `|E|` elements, where the `ith` element gives the slope of the `ith` edge. '''
         slopes = []
         for i in range(1, len(self.altitudes)):
-            slopes.append((self.altitudes[i] - self.altitudes[i-1]) / self.distances[i])
+            slopes.append((self.altitudes[i] - self.altitudes[i-1]) / (self.distances[i] - self.distances[i-1]))
         return slopes
 
     def from_path(self, graph: igraph.Graph, path: typing.List[int]):
