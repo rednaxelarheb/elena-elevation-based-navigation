@@ -94,9 +94,6 @@ def get_route():
     longitude = float(input_data['start_address']['longitude'])
     desired_distances = input_data['desired_profile']['distances']
     desired_altitudes = input_data['desired_profile']['altitudes']
-    # we can remove total distance and uphill; these are implied by the profile
-    #total_distance = float(input_data['length'])
-    #total_uphill = float(input_data['desired_uphill'])
  
     # get routes
     routes = get_route_helper(latitude, longitude, desired_distances, desired_altitudes)

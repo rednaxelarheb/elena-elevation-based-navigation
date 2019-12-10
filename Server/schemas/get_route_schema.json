@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["start_address","length"],
+  "required": ["start_address", "desired_profile"],
   "properties": {
     "start_address": {
       "type": "object",
@@ -14,12 +14,6 @@
           "type": "number"
         }
       }
-    },
-    "desired_uphill": {
-      "type": "number"
-    },
-    "length": {
-      "type": "number"
     },
     "desired_profile": {
       "distances": {
