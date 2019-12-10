@@ -65,18 +65,19 @@
         placeholder="How much uphill? (m)" 
         style='width:200px'
         type="number">
-    <button class="btn btn-outline-secondary" id="button-locate"
-            onclick="getCurrentPosition(showAddress)" type="button">📍
-    <button class="btn btn-outline-secondary" id="button-go"
-            onclick="geocodingWithMapquest()" type="button">Go! </button>
+    <!-- <button class="btn btn-outline-secondary" id="button-locate"
+            onclick="getCurrentPosition(showAddress)" type="button">📍 -->
+    <button class="btn btn-outline-secondary" 
+            id="button-go"
+            onclick="geocodingWithMapquest()" 
+            style='width:200px'
+            type="button">Go! </button>
     <!-- <button class="routeButton" onclick="showServerRoute(42.35713,-72.48523,2.5,500)">Show Server Route</button> -->
-    <button class="routeButton" onclick="showServerRoute(50,50,2,500)">Show Server Route</button>
-    <button class="routeButton" onclick="generateProfiles()">Get Profiles</button>
-    <form>
-        <input type="radio" name="profile" value="Gentle Up and Down" checked> Gentle Up and Down<br>
-        <input type="radio" name="profile" value="Gentle Down and Up"> Gentle Down and Up<br>
-      </form>
-    <button class="routeButton" onclick="addDumbButton()">Add a Button</button>
+    <!-- <button class="routeButton" onclick="showServerRoute(50,50,2,500)">Show Server Route</button> -->
+    <!-- <button class="routeButton" onclick="generateProfiles()">Get Profiles</button> -->
+    <label> <input type="radio" name="profileRadios" value="0" checked> Gentle Up and Down</label>
+    <label> <input type="radio" name="profileRadios" value="1"> Gentle Down and Up</label>
+    <!-- <button class="routeButton" onclick="printRadioInfo()">Which Radio Button?</button> -->
     <div id="routeOptions" class="routeOptions"></div>
     <div id="routeDetails"></div>
     <div id="turnByTurn" class="ScrollStyle"></div>
@@ -86,13 +87,14 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJ5Y2UtYmciLCJhIjoiY2syamQwc29lMXB6ODNjbjB2Y3ZsdWoxOCJ9.neUa4jI0zKFU8_BvSDt0Aw';
 mapquestApiKey = 'ejTqTaBRu1Ok5NGGMwZRpqEpDGJ03eGf';
 
-var semiOpaque = 0.07;
+var semiOpaque = 0.15;
 var opaque = 1;
 var isMapInit = false;
 var routes;
 var routeHasBeenSelected = false;
 var hoverId = null;
 var routesHaveBeenRendered = false;
+var numProfiles = 2;
 
 function initMap() {
     let map = new mapboxgl.Map({
@@ -307,12 +309,23 @@ function addStartPin(lat,lng) {
     });
 }
 
+function printRadioInfo(){
+    var profileIndex = $("input:radio:checked").val();
+    console.log(profileIndex);
+}
+
 function showServerRoute(lat,lng,dist,uphill) {
     // addStartPin(lat,lng);
-    var profile = generateProfiles()[0];
+    var profiles = generateProfiles();
+    var profileIndex = $("input[name='profileRadios']:checked").val();
+    console.log(profileIndex);
+    var profile = profiles[profileIndex];
+    console.log(profile);
+
+    setRouteZoom(lng, lat);
 
     if (routesHaveBeenRendered) {
-        // remove all routes and set routes global to empty listkj
+        // remove all routes and set routes global to empty list
     }
     
     postData = JSON.stringify({
@@ -320,8 +333,6 @@ function showServerRoute(lat,lng,dist,uphill) {
             "latitude": lat, 
             "longitude": lng
             }, 
-        "desired_uphill": uphill, 
-        "length": dist,
         "desired_profile": profile
         });
 
@@ -333,6 +344,7 @@ function showServerRoute(lat,lng,dist,uphill) {
         data: postData,
         contentType: 'application/json',
         success: function (routesData) {
+            console.log("Received Map Data")
             routesHaveBeenRendered = true;
             routes = parseRoutes(routesData);
             for (r in routes) {
@@ -351,12 +363,52 @@ function getCurrentPosition(callback) {
     }
 }
 
-function setRouteZoom(route) {
-    var bounds = route.reduce(function (bounds, coord) {
-            return bounds.extend(coord);
-    }, new mapboxgl.LngLatBounds(route[0], route[0]));
+var zoomResolutions = [
+    59959.436, 
+    29979.718, 
+    14989.859, 
+    7494.929, 
+    3747.465, 
+    1873.732, 
+    936.866, 
+    468.433, 
+    234.217, 
+    117.108, 
+    58.554, 
+    29.277, 
+    14.639, 
+    7.319, 
+    3.660, 
+    1.830, 
+    0.915, 
+    0.457, 
+    0.229, 
+    0.114, 
+    0.057, 
+    0.029, 
+    0.014, 
+]
 
-    map.fitBounds(bounds, {padding: 40});
+function setRouteZoom(lng, lat) {
+    // var bounds = route.reduce(function (bounds, coord) {
+    //         return bounds.extend(coord);
+    // }, new mapboxgl.LngLatBounds(route[0], route[0]));
+
+    // map.fitBounds(bounds, {padding: 40});
+    var distanceM = document.getElementById('distance-input').value * 1000;
+    var widthPX = window.innerWidth;
+    desiredResolutionMperPX = (distanceM / widthPX)
+    zoomLevel = 23;
+        for (var i = 0; i < 22; i++) {
+            if (zoomResolutions[i + 1] < desiredResolutionMperPX) {
+                zoomLevel = i;
+                break;
+            }
+        }
+    map.flyTo({
+        center: [lng, lat],
+        zoom: zoomLevel,
+    });
 }
 
 
@@ -372,7 +424,6 @@ function showRoute(routesIndex, latLongList, gradientList, opacity) {
     var id = routes[routesIndex]['id'];
     var source_id = id + "_source";
     // TODO: set this to the extremes of all routes instead of just one
-    setRouteZoom(latLongList);
     var geojson = {
         "type": "FeatureCollection",
         "features": [{
@@ -589,79 +640,6 @@ function generateProfiles() {
     // console.log(profiles);
     return profiles;
 }
-
-var test_grad = [
-                // 0.0, "yellow",
-                0.1, "yellow",
-                0.2, "lime",
-                0.3, "cyan",
-                0.4, "royalblue",
-                0.5, "blue",
-                0.6, "darkred",
-                0.7, "black",
-                0.8, "lime",
-                0.9, "yellow",
-                0.91, "red"];
-
-var lgrc_marston_route = [ 
-              [-72.5267224, 42.3942209],
-              [-72.5266523, 42.3942427],
-              [-72.5265448, 42.3942762],
-              [-72.5263269, 42.3939052],
-              [-72.5269955, 42.3936949],
-              [-72.5273381, 42.3939466],
-              [-72.5277246, 42.3946398],
-              [-72.5281995, 42.3946879],
-              [-72.528568, 42.3945891],
-              [-72.5286749, 42.3945466],
-              [-72.5290824, 42.394426],
-              [-72.5288819, 42.3939421],
-              [-72.5292508, 42.3938264],
-              [-72.5293035, 42.3939254], 
-              ];
-
-var campus_loop_route = [
-              <!-- [-72.5267224, 42.3942209], -->
-              <!-- [-72.5266523, 42.3942427], -->
-              <!-- [-72.5265448, 42.3942762], -->
-              <!-- [-72.5263269, 42.3939052], -->
-              <!-- [-72.5269955, 42.3936949], -->
-              [-72.5271314, 42.3936519],
-              [-72.5279197, 42.3934026],
-              [-72.5280705, 42.3936787],
-              [-72.528568, 42.3945891],
-              [-72.5286749, 42.3945466],
-              [-72.5290824, 42.394426],
-              [-72.5288819, 42.3939421],
-              [-72.5292508, 42.3938264],
-              [-72.5293035, 42.3939254],
-              [-72.5293035, 42.3939254],
-              [-72.5292508, 42.3938264],
-              [-72.5288408, 42.3937322],
-              [-72.5286577, 42.3935782],
-              [-72.5285486, 42.3934142],
-              [-72.5286778, 42.3931534],
-              [-72.5283612, 42.3932528],
-              [-72.5282097, 42.3929871],
-              <!-- [-72.5279098, 42.3924841], -->
-              <!-- [-72.5281986, 42.3921527], -->
-              <!-- [-72.5281986, 42.3921527], -->
-              [-72.5279098, 42.3924841],
-              [-72.527864, 42.3924199],
-              [-72.5275371, 42.3926385],
-              [-72.5271412, 42.3927435],
-              <!-- [-72.5267823, 42.3929566], -->
-              <!-- [-72.527568, 42.3931221], -->
-              <!-- [-72.527568, 42.3931221], -->
-              [-72.5267823, 42.3929566],
-              [-72.5266706, 42.3930229],
-              [-72.5271314, 42.3936519],
-              <!-- [-72.5269955, 42.3936949], -->
-              <!-- [-72.5263269, 42.3939052], -->
-              <!-- [-72.5265448, 42.3942762], -->
-              <!-- [-72.5266523, 42.3942427], -->
-              <!-- [-72.5267224, 42.3942209], -->
-              ];
 
 </script>
 
